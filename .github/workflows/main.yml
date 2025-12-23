@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: crdroidandroid/android_kernel_xiaomi_jason
-  kernel_branch: main
+  kernel_branch: 15
   device: jason
   clang_version: r365631c
   defconfig: |
