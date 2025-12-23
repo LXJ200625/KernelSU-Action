@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm845
-  kernel_branch: fourteen
-  device: dipper
+  kernel_repository: https://github.com/LineageOS/android_kernel_xiaomi_sdm710.git
+  kernel_branch: lineage-22.2
+  device: sirius
   clang_version: r487747c
   defconfig: |
-    dipper_defconfig
+    xiaomi/sdm710-common.config
+    xiaomi/sirius.config
   kernel_patch: |
     backport-path-umount.patch
   kernelsu_patch: |
