@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LineageOS/android_kernel_xiaomi_sdm710
-  kernel_branch: lineage-22.2
-  device: sirius
+  kernel_repository: crdroidandroid/android_kernel_xiaomi_jason
+  kernel_branch: 15.0
+  device: jason
   clang_version: r365631c
   defconfig: |
-    xiaomi/sdm710-common.config
-    xiaomi/sirius.config
+    jason_defconfig
   kernel_patch: |
     backport-path-umount.patch
   kernelsu_patch: |
