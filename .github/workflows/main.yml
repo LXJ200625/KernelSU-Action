@@ -4,7 +4,7 @@ env:
   kernel_repository: LXJ200625/sdm660-jason
   kernel_branch: main-15
   device: jason
-  clang_version: r365631c
+  clang_version: r487747c
   defconfig: |
     jason_defconfig
   kernel_patch: |
