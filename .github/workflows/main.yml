@@ -1,7 +1,7 @@
 name: Check and Build
 
 env:
-  kernel_repository: https://github.com/LineageOS/android_kernel_xiaomi_sdm710.git
+  kernel_repository: LineageOS/android_kernel_xiaomi_sdm710
   kernel_branch: lineage-22.2
   device: sirius
   clang_version: r365631c
