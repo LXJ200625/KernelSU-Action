@@ -6,8 +6,8 @@ env:
   device: jason
   clang_version: r487747c
   defconfig: |
-    jason.config
-    sdm660_defconfig
+    vendor/xiaomi/jason.config
+    vendor/xiaomi/sdm660_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
