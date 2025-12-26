@@ -4,7 +4,7 @@ env:
   kernel_repository: LXJ200625/kernel_xiaomi_sdm660
   kernel_branch: lineage-18.1
   device: jason
-  clang_version: r487747c
+  clang_version: r365631c
   defconfig: |
     jason_defconfig
   kernel_patch: |
