@@ -6,6 +6,7 @@ env:
   device: sirius
   clang_version: r487747c
   defconfig: |
+    sdm670-perf_defconfig
     xiaomi/sdm710-common.config
     xiaomi/sirius.config
   kernel_patch: |
