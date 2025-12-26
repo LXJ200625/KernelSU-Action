@@ -1,14 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: B--B/android_kernel_xiaomi_sdm710
-  kernel_branch: fourteen-LTO
+  kernel_repository: SDM710-Development/android_kernel_xiaomi_sdm710
+  kernel_branch: 10.0-caf
   device: sirius
   clang_version: r487747c
   defconfig: |
-    sdm670-perf_defconfig
-    xiaomi/sdm710-common.config
-    xiaomi/sirius.config
+    sirius_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
