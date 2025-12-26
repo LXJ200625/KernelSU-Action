@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: Tkiliay/android_kernel_xiaomi_sdm710
-  kernel_branch: sixteen
+  kernel_repository: B--B/android_kernel_xiaomi_sdm710
+  kernel_branch: fourteen-LTO
   device: sirius
   clang_version: r487747c
   defconfig: |
