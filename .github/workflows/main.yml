@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: kibria5/kernel_xiaomi_violet
-  kernel_branch: 14-ksu
-  device: violet
+  kernel_repository: LXJ200625/kernel_xiaomi_sdm660
+  kernel_branch: lineage-18.1
+  device: jason
   clang_version: r487747c
   defconfig: |
-    vendor/violet-perf_defconfig
+    jason_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
@@ -93,9 +93,7 @@ jobs:
               echo "Merging defconfig: $line"
               cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
-              echo 'CONFIG_DTBO_BUILD=n' >>arch/arm64/configs/merged_defconfig
-              echo 'CONFIG_BUILD_DTBO=n' >>arch/arm64/configs/merged_defconfig
-
+        
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
@@ -212,9 +210,9 @@ jobs:
           EOF
 
           cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
-          #if [ -f out/arch/arm64/boot/dtbo.img ]; then
-              #cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
-          #fi
+          if [ -f out/arch/arm64/boot/dtbo.img ]; then
+              cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
+          fi
 
           cd AnyKernel3-master
           rm -rf .git* README.md
