@@ -4,7 +4,7 @@ env:
   kernel_repository: Kscope-Devices/android_kernel_xiaomi_sirius
   kernel_branch: sunflowerleaf
   device: sirius
-  clang_version: 11
+  clang_version: r383902
   defconfig: |
     sirius_defconfig
   kernel_patch: |
