@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: pix106/android_kernel_xiaomi_southwest-4.19
-  kernel_branch: main
-  device: clover
+  kernel_repository: MrMiy4mo-xmsirius/uixdess_kernel_xiaomi_sdm710
+  kernel_branch: 12.0
+  device: sirius
   clang_version: r416183b
   defconfig: |
-    clover_defconfig
+    sirius_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
