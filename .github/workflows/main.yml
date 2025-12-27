@@ -2,6 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: negrroo/LawRun_realme_sdm710
+  kernel_branch: master
   device: RMX1901
   clang_version: r416183b
   defconfig: |
