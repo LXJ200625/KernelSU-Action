@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: MrMiy4mo-xmsirius/uixdess_kernel_xiaomi_sdm710
-  kernel_branch: 12.0
+  kernel_branch: main
   device: sirius
   clang_version: r416183b
   defconfig: |
