@@ -1,12 +1,11 @@
 name: Check and Build
 
 env:
-  kernel_repository: Diva-Room/Miku_kernel_xiaomi_wayne
-  kernel_branch: TDA
-  device: wayne
+  kernel_repository: negrroo/LawRun_realme_sdm710
+  device: RMX1901
   clang_version: r416183b
   defconfig: |
-    vendor/wayne_defconfig
+    RMX1901_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
