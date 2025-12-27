@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_xiaomi_sdm660
-  kernel_branch: lineage-18.1
-  device: jason
-  clang_version: r365631c
+  kernel_repository: Diva-Room/Miku_kernel_xiaomi_wayne
+  kernel_branch: TDA
+  device: wayne
+  clang_version: r416183b
   defconfig: |
-    jason_defconfig
+    wayne_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
