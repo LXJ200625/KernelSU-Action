@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: negrroo/LawRun_realme_sdm710
-  kernel_branch: master
-  device: RMX1901
+  kernel_repository: pix106/android_kernel_xiaomi_southwest-4.19
+  kernel_branch: main
+  device: clover
   clang_version: r416183b
   defconfig: |
-    RMX1901_defconfig
+    clover_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
