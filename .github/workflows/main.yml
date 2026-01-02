@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: Kscope-Devices/android_kernel_xiaomi_sirius
-  kernel_branch: sunflowerleaf
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm710
+  kernel_branch: eleven
   device: sirius
   clang_version: r383902
   defconfig: |
