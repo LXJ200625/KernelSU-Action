@@ -1,7 +1,7 @@
 name: Check and Build
 
 env:
-  kernel_repository: Rocky7842/android_kernel_xiaomi_sdm710
+  kernel_repository: LXJ200625/kernel_xiaomi_sdm710
   kernel_branch: lineage-20
   device: sirius
   clang_version: r365631c
