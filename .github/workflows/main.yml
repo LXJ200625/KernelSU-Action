@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: LXJ200625/android_kernel_xiaomi_sdm710
-  kernel_branch: lineage-19.1
+  kernel_branch: lineage-22.2
   device: sirius
   clang_version: r365631c
   defconfig: |
