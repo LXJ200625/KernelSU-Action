@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm710
-  kernel_branch: twelve
+  kernel_branch: thirteen
   device: sirius
   clang_version: r383902
   defconfig: |
