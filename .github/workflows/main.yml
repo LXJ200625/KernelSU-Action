@@ -4,7 +4,7 @@ env:
   kernel_repository: Rocky7842/android_kernel_xiaomi_sdm710
   kernel_branch: lineage-20
   device: sirius
-  clang_version: r487747c
+  clang_version: r365631c
   defconfig: |
     sdm670-perf_defconfig
     xiaomi/sdm710-common.config
