@@ -96,6 +96,7 @@ jobs:
         
       - name: Setup KernelSU
         run: |
+          rm -rf KernelSU
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
           echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
