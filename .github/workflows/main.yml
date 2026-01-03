@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: negrroo/LawRun_realme_sdm710
-  kernel_branch: master
-  device: RMX1901
+  kernel_repository: LXJ200625/android_kernel_xiaomi_violet
+  kernel_branch: fourteen
+  device: violet
   clang_version: r416183b
   defconfig: |
-    RMX1901_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
