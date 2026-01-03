@@ -1,13 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_xiaomi_sdm660
-  kernel_branch: lineage-21-4.19
-  device: jason
+  kernel_repository: LineageOS/android_kernel_xiaomi_sm6150
+  kernel_branch: lineage-23.0
+  device: violet
   clang_version: r487747c
   defconfig: |
-    vendor/xiaomi/jason.config
-    vendor/xiaomi/sdm660_defconfig
+    vendor/violet.config
+    vendor/phoenix.config
+    vendor/trinket-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
