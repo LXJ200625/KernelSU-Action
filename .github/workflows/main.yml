@@ -1,14 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LineageOS/android_kernel_xiaomi_sm6150
-  kernel_branch: lineage-23.0
+  kernel_repository: Joker-V2/kernel_xiaomi_violet
+  kernel_branch: sixteen
   device: violet
   clang_version: r487747c
   defconfig: |
-    vendor/violet.config
-    vendor/phoenix.config
-    vendor/trinket-perf_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
