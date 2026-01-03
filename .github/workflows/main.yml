@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LKDenchin/scarlet_sdm660
-  kernel_branch: sched-test
+  kernel_repository: negrroo/LawRun_realme_sdm710
+  kernel_branch: master
   device: wayne
   clang_version: r416183b
   defconfig: |
-    vendor/wayne-perf_defconfig
+    RMX1901_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
