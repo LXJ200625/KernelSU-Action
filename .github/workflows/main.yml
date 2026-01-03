@@ -1,7 +1,7 @@
 name: Check and Build
 
 env:
-  kernel_repository: SakuraKyuo/android_kernel_xiaomi_sdm710
+  kernel_repository: LXJ200625/android_kernel_xiaomi_sdm710
   kernel_branch: UDC-dev
   device: sirius
   clang_version: r365631c
