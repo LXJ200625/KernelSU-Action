@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/arrow_kernel_xiaomi_violet
-  kernel_branch: arrow-13.1
+  kernel_repository: jashvakharia/kernel_xiaomi_violet
+  kernel_branch: thirteen
   device: violet
   clang_version: r416183b
   defconfig: |
-    violet_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
