@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: jashvakharia/kernel_xiaomi_violet
-  kernel_branch: thirteen
+  kernel_repository: rokusenpaislab/android_kernel_vertigo
+  kernel_branch: tm
   device: violet
   clang_version: r416183b
   defconfig: |
