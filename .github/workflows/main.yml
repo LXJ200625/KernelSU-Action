@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/uixdess_kernel_xiaomi_sdm710
-  kernel_branch: android12
+  kernel_repository: LXJ200625/kernel_sdm660_clover
+  kernel_branch: sixteen
   device: sirius
   clang_version: r365631c
   defconfig: |
-    sirius_defconfig
+    clover_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
