@@ -1,9 +1,9 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_sdm660_clover
-  kernel_branch: sixteen
-  device: sirius
+  kernel_repository: DevYurua/nethunter_kernel_xiaomi_clover
+  kernel_branch: new_90hz
+  device: clover
   clang_version: r365631c
   defconfig: |
     clover_defconfig
