@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: DevYurua/nethunter_kernel_xiaomi_clover
-  kernel_branch: new_90hz
+  kernel_repository: pix106/android_kernel_xiaomi_sdm660_southwest
+  kernel_branch: eas-bpf
   device: clover
   clang_version: r365631c
   defconfig: |
