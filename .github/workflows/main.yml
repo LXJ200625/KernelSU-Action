@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/android_kernel_xiaomi_sdm710
-  kernel_branch: lineage-22.2
-  device: sirius
+  kernel_repository: kyasu/android_kernel_xiaomi_sdm660
+  kernel_branch: lineage-23.0
+  device: clover
   clang_version: r487747c
   defconfig: |
-    sirius_defconfig
+    clover_defconfig
   kernel_patch: |
     # backport-path-umount.patch
   kernelsu_patch: |
