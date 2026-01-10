@@ -4,7 +4,7 @@ env:
   kernel_repository: kyasu/android_kernel_xiaomi_sdm660
   kernel_branch: lineage-23.0
   device: clover
-  clang_version: r487747c
+  clang_version: r365631c
   defconfig: |
     clover_defconfig
   kernel_patch: |
