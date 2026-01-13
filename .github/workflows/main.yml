@@ -1,14 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/android_kernel_xiaomi_sdm710
-  kernel_branch: Tiramisu
-  device: sirius
-  clang_version: r365631c
+  kernel_repository: LXJ200625/scarlet_wayne
+  kernel_branch: sched-test
+  device: wayne
+  clang_version: r450784e
   defconfig: |
-    sdm670-perf_defconfig
-    xiaomi/sdm710-common.config
-    xiaomi/sirius.config
+    vendor/wayne-oss-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
