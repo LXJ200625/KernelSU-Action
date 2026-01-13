@@ -1,14 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/android_kernel_xiaomi_sdm710
-  kernel_branch: UDC-dev
-  device: sirius
+  kernel_repository: LKDenchin/jason_kernel_sdm660
+  kernel_branch: jason-2025-ksu
+  device: jason
   clang_version: r365631c
   defconfig: |
-    sdm670-perf_defconfig
-    xiaomi/sdm710-common.config
-    xiaomi/sirius.config
+    jason_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
