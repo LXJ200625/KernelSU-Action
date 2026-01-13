@@ -2,13 +2,12 @@ name: Check and Build
 
 env:
   kernel_repository: LXJ200625/android_kernel_xiaomi_sdm845
-  kernel_branch: sixteen
+  kernel_branch: fifteen
   device: dipper
   clang_version: r450784e
   defconfig: |
     vendor/xiaomi/dipper.config
-    vendor/xiaomi/sdm845-common.config
-    vendor/sdm845-perf_defconfig
+    vendor/xiaomi/mi845_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
