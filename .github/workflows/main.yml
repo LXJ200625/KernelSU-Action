@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/scarlet_wayne
-  kernel_branch: sched-test
-  device: wayne
+  kernel_repository: iamehsangh/android_kernel_xiaomi_jason
+  kernel_branch: eas-los-bpf-test
+  device: jason
   clang_version: r450784e
   defconfig: |
-    vendor/wayne-oss-perf_defconfig
+    jason_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
