@@ -8,7 +8,8 @@ env:
   defconfig: |
     jason_defconfig
   kernel_patch: |
-    
+    kernel-4.4_4.9.patch
+    allow-init-exec-ksud-under-nosuid.patch
   kernelsu_patch: |
 
 on:
@@ -29,7 +30,7 @@ jobs:
         run: |
           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
           # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
-          remote_version=v0.9.5
+          remote_version=v3.0.0-30-legacy
           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
@@ -98,9 +99,9 @@ jobs:
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
@@ -209,7 +210,7 @@ jobs:
           flash_boot
           EOF
 
-          cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
               cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
@@ -241,4 +242,4 @@ jobs:
             KernelSU:
             https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
           files: |
-            boot.zip
+            capricorn.zip
