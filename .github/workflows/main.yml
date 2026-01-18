@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: PixelExperience-Devices/kernel_xiaomi_violet
-  kernel_branch: thirteen
+  kernel_branch: fourteen
   device: violet
   clang_version: r383902
   defconfig: |
