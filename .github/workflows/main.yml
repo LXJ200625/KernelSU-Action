@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: rokusenpaislab/android_kernel_vertigo
-  kernel_branch: tm
-  device: violet
+  kernel_repository: Evolution-X-Devices/kernel_xiaomi_sdm845
+  kernel_branch: bka
+  device: dipper
   clang_version: r383902
   defconfig: |
-    vendor/violet-perf_defconfig
+    vendor/xiaomi/mi845_defconfig
+    vendor/xiaomi/dipper.config
   kernel_patch: |
   
   kernelsu_patch: |
