@@ -1,14 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: kisodev/android_kernel_xiaomi_sdm845
-  kernel_branch: lineage-22.2-4.19-staging-ksu
+  kernel_repository: Evolution-X-Devices/kernel_xiaomi_sdm845
+  kernel_branch: bka
   device: dipper
   clang_version: r450784e
   defconfig: |
     vendor/xiaomi/dipper.config
-    vendor/xiaomi/sdm845-common.config
-    vendor/sdm845-stock_defconfig
+    vendor/xiaomi/mi845_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
