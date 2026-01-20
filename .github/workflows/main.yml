@@ -6,8 +6,8 @@ env:
   device: dipper
   clang_version: r487747c
   defconfig: |
-    xiaomi/dipper.config
-    xiaomi/mi845_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/xiaomi/mi845_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
