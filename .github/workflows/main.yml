@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_sdm660_clover
-  kernel_branch: sixteen
-  device: clover
+  kernel_repository: LineageOS/android_kernel_xiaomi_sdm660
+  kernel_branch: lineage-20
+  device: jason
   clang_version: r365631c
   defconfig: |
-    clover_defconfig
+    vendor/xiaomi/jason.config
+    vendor/xiaomi/sdm660_defconfig
   kernel_patch: |
     # backport-path-umount.patch
   kernelsu_patch: |
