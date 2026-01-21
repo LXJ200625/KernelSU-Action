@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: alexeei/kernel_xiaomi_lmi
-  kernel_branch: alpha14
+  kernel_repository: projects-nexus/nexus_kernel_xiaomi_sm8250
+  kernel_branch: stable
   device: lmi
   clang_version: r450784e
   defconfig: |
