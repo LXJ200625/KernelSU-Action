@@ -4,7 +4,7 @@ env:
   kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm660
   kernel_branch: thirteen
   device: jason
-  clang_version: r365631c
+  clang_version: r450784e
   defconfig: |
     jason_defconfig
   kernel_patch: |
