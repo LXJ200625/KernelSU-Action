@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LineageOS/android_kernel_xiaomi_sdm660
-  kernel_branch: lineage-20
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm660
+  kernel_branch: thirteen
   device: jason
   clang_version: r365631c
   defconfig: |
-    vendor/xiaomi/jason.config
-    vendor/xiaomi/sdm660_defconfig
+    jason_defconfig
   kernel_patch: |
     # backport-path-umount.patch
   kernelsu_patch: |
