@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: kisodev/android_kernel_xiaomi_sdm845
-  kernel_branch: lineage-22.2-4.19-staging-ksu
+  kernel_repository: duckyduckG/android_kernel_xiaomi_sdm845_419
+  kernel_branch: lineage-23.1_xiaomi
   device: dipper
   clang_version: r487747c
   defconfig: |
