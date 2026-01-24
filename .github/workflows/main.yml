@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LKDenchin/jason_kernel_sdm660
-  kernel_branch: jason-2025-ksu
-  device: jason
-  clang_version: r365631c
+  kernel_repository: kavencat/android_kernel_xiaomi_wayne-4.19
+  kernel_branch: tequila
+  device: wayne
+  clang_version: r416183b
   defconfig: |
-    jason_defconfig
+    vendor/wayne_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
@@ -209,7 +209,7 @@ jobs:
           flash_boot
           EOF
 
-          cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
               cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
