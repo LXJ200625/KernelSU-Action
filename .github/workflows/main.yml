@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: Evolution-X-Devices/kernel_xiaomi_sdm845
-  kernel_branch: bka
-  device: dipper
+  kernel_repository: Joker-V2/kernel_xiaomi_violet
+  kernel_branch: sixteen-sukisu
+  device: violet
   clang_version: r383902
   defconfig: |
-    vendor/xiaomi/mi845_defconfig
-    vendor/xiaomi/dipper.config
+    vendor/violet-perf_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
@@ -100,9 +99,9 @@ jobs:
         run: |
           rm -rf KernelSU
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES' >>arch/arm64/configs/merged_defconfig
+         # curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+         # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_HAVE_KPROBES' >>arch/arm64/configs/merged_defconfig
          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
