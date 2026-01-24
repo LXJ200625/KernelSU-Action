@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: Joker-V2/kernel_xiaomi_violet
-  kernel_branch: sixteen
+  kernel_repository: LXJ200625/kernel_xiaomi_violet
+  kernel_branch: fifteen
   device: violet
   clang_version: r487747c
   defconfig: |
@@ -29,7 +29,7 @@ jobs:
         run: |
           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
           # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
-          remote_version=v0.9.5
+          remote_version=v3.0.0-30-legacy
           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
