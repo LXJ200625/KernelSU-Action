@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: Diva-Room/Miku_kernel_xiaomi_wayne
-  kernel_branch: TDA
+  kernel_branch: Udon
   device: wayne
   clang_version: r416183b
   defconfig: |
