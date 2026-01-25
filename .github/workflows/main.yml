@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: kyasu/android_kernel_xiaomi_sdm660
-  kernel_branch: lineage-23
+  kernel_branch: lineage-23.0
   device: wayne
   clang_version: r450784e
   defconfig: |
