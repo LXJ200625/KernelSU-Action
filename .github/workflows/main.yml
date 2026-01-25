@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm710
-  kernel_branch: thirteen
-  device: sirius
-  clang_version: r383902
+  kernel_repository: Atom-X-Devs/scarlet_xiaomi_sdm660
+  kernel_branch: a13/qpnp-haptics
+  device: wayne
+  clang_version: r416183b
   defconfig: |
-    sirius_defconfig
+    vendor/wayne-oss-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
