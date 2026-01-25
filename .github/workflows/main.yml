@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: Atom-X-Devs/scarlet_xiaomi_sdm660
-  kernel_branch: a13/qpnp-haptics
+  kernel_repository: user-why-red/android_kernel_xiaomi_sdm660_419
+  kernel_branch: android-4.19-stable
   device: wayne
   clang_version: r416183b
   defconfig: |
