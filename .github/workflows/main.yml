@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: Diva-Room/Miku_kernel_xiaomi_wayne
-  kernel_branch: Udon
-  device: wayne
+  kernel_repository: AlcatrazDev-Android-Devices/kernel_xiaomi_clover
+  kernel_branch: thirteen-plus-deprecated-4.4
+  device: jason
   clang_version: r416183b
   defconfig: |
-    vendor/wayne_defconfig
+    jason_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
