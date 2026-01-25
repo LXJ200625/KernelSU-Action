@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: Joker-V2/kernel_xiaomi_violet
-  kernel_branch: sixteen-sukisu
+  kernel_repository: Kyuofox-Studio/android_kernel_xiaomi_lmi
+  kernel_branch: lineage-22
   device: violet
-  clang_version: r383902
+  clang_version: r416183b
   defconfig: |
-    vendor/violet-perf_defconfig
+    lmi_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
