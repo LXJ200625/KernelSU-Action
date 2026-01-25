@@ -1,14 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: duckyduckG/android_kernel_xiaomi_sdm845_419
-  kernel_branch: lineage-23.1_xiaomi
-  device: dipper
-  clang_version: r487747c
+  kernel_repository: Tkiliay/android_kernel_xiaomi_sdm710
+  kernel_branch: fourteen
+  device: sirius
+  clang_version: r416183b
   defconfig: |
-    vendor/xiaomi/dipper.config
-    vendor/xiaomi/sdm845-common.config
-    vendor/sdm845-perf_defconfig
+    vendor/sdm670-perf_fefconfig
+    xiaomi/sdm710-common.config
+    xiaomi/sirius.config
   kernel_patch: |
     
   kernelsu_patch: |
