@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: kavencat/android_kernel_xiaomi_wayne-4.19
-  kernel_branch: tequila
+  kernel_repository: Diva-Room/Miku_kernel_xiaomi_wayne
+  kernel_branch: TDA
   device: wayne
   clang_version: r416183b
   defconfig: |
