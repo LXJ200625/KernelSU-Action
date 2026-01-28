@@ -1,13 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: xiaohu224/android_kernel_xiaomi_sdm660
-  kernel_branch: lineage-test
+  kernel_repository: Rocky7842/android_kernel_xiaomi_sdm660
+  kernel_branch: lineage-23.0
   device: wayne
   clang_version: r450784e
   defconfig: |
-    vendor/xiaomi/sdm660_defconfig
+    vendor/sdm660-perf_defconfig
     vendor/xiaomi/wayne.config
+    vendor/xiaomi/sdm660-common.config
   kernel_patch: |
     # backport-path-umount.patch
   kernelsu_patch: |
