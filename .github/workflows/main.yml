@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: Evolution-X-Devices/kernel_xiaomi_sdm845
-  kernel_branch: bka
+  kernel_repository: PocoF1-Resources/android_kernel_xiaomi_sdm845
+  kernel_branch: 16.0-bpf
   device: dipper
   clang_version: r450784e
   defconfig: |
