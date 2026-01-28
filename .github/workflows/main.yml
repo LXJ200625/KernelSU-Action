@@ -188,4 +188,4 @@ jobs:
             Device: ${{ env.device }}
             Kernel: https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
             Branch: ${{ env.kernel_branch }}
-          files: XDKernel.zip
+          files: boot.zip
