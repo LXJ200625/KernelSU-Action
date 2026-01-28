@@ -4,7 +4,7 @@ env:
   kernel_repository: PocoF1-Resources/android_kernel_xiaomi_sdm845
   kernel_branch: 16.0-bpf
   device: dipper
-  clang_version: r450784e
+  clang_version: r383902
   defconfig: |
     vendor/xiaomi/dipper.config
     vendor/xiaomi/mi845_defconfig
