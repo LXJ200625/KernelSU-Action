@@ -61,7 +61,18 @@ jobs:
       - name: Fix BPF type mismatch
         run: |
           sed -i '1490s/fp->bpf_func = interpreters\[(round_up(stack_depth, 32) \/ 32) - 1\];/fp->bpf_func = (typeof(fp->bpf_func))interpreters[(round_up(stack_depth, 32) \/ 32) - 1];/' kernel/bpf/core.c
-        
+          
+      - name: Fix bonding driver error
+        run: |
+          # 找到错误行并修复
+          sed -i '2333s/netdev_for_each_all_upper_dev_rcu/netdev_walk_all_upper_dev_rcu/' drivers/net/bonding/bond_main.c
+          
+          # 修复后续语法问题（修复括号和分号）
+          sed -i '2333,2336s/{/(/; 2333,2336s/}/)/; 2333s/)$/);/' drivers/net/bonding/bond_main.c
+          
+          # 删除错误的 break 语句（第2336行）
+          sed -i '2336d' drivers/net/bonding/bond_main.c
+           
       - name: Merge defconfig
         run: |
           while read -r line; do
