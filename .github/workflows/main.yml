@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: Kyuofox-Studio/android_kernel_xiaomi_lmi
-  kernel_branch: lineage-22
-  device: lmi
+  kernel_repository: diphons/D8G_Kernel
+  kernel_branch: sdm845
+  device: dippr
   clang_version: r450784e
   defconfig: |
-    lmi_defconfig
+    sdm845-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
