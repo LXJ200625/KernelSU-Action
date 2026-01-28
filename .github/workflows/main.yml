@@ -1,8 +1,8 @@
 name: Build Kernel
 
 env:
-  kernel_repository: PocoF1-Resources/android_kernel_xiaomi_sdm845
-  kernel_branch: 16.0-bpf
+  kernel_repository: LineageOS/android_kernel_xiaomi_sdm845
+  kernel_branch: lineage-22.2
   device: dipper
   clang_version: r383902
   defconfig: |
@@ -57,57 +57,6 @@ jobs:
       - name: Get latest kernel commit id
         run: |
           echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
-      
-      - name: Fix BPF type mismatch
-        run: |
-          sed -i '1490s/fp->bpf_func = interpreters\[(round_up(stack_depth, 32) \/ 32) - 1\];/fp->bpf_func = (typeof(fp->bpf_func))interpreters[(round_up(stack_depth, 32) \/ 32) - 1];/' kernel/bpf/core.c
-          
-      - name: Fix bonding driver error
-        run: |
-          set -e
-          # 修复bonding驱动中的API不兼容问题
-          cat > /tmp/bonding_fix.patch << 'EOF'
-          --- a/drivers/net/bonding/bond_main.c
-          +++ b/drivers/net/bonding/bond_main.c
-          @@ -2330,13 +2330,19 @@ static bool bond_validate_src_mac(struct bonding *bond, __be32 ip)
-                   return false;
-           }
-           
-          +static bool bond_upper_dev_check(struct net_device *upper_dev, void *data)
-          +{
-          +       __be32 *ip_ptr = data;
-          +       return (*ip_ptr == bond_confirm_addr(upper_dev, 0, *ip_ptr));
-          +}
-          +
-           static bool bond_validate_src_mac(struct bonding *bond, __be32 ip)
-           {
-                  struct net_device *upper;
-          -       netdev_for_each_all_upper_dev_rcu(bond->dev, upper, iter) {
-          -               if (ip == bond_confirm_addr (upper, 0, ip)) {
-          -                       return true;
-          -               }
-          -       }
-          +       if (netdev_walk_all_upper_dev_rcu(bond->dev, bond_upper_dev_check, &ip))
-          +               return true;
-                  return false;
-           }
-          EOF
-          
-          # 应用补丁
-          if patch -p1 -l -i /tmp/bonding_fix.patch; then
-            echo "✅ Bonding驱动补丁应用成功"
-          else
-            echo "⚠️ 补丁应用失败，尝试直接修改代码"
-            # 备用方案：直接修改代码
-            sed -i '2333s/netdev_for_each_all_upper_dev_rcu/netdev_walk_all_upper_dev_rcu/' drivers/net/bonding/bond_main.c
-            sed -i '2333s/{//' drivers/net/bonding/bond_main.c
-            sed -i '2336d' drivers/net/bonding/bond_main.c
-            sed -i '2335s/));/);/' drivers/net/bonding/bond_main.c
-          fi
-          
-          # 确保配置禁用
-          echo "CONFIG_BONDING=n" >> arch/arm64/configs/merged_defconfig
-          echo "✅ Bonding驱动修复完成"
 
       - name: Merge defconfig
         run: |
@@ -239,4 +188,4 @@ jobs:
             Device: ${{ env.device }}
             Kernel: https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
             Branch: ${{ env.kernel_branch }}
-          files: boot.zip
+          files: XDKernel.zip
