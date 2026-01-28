@@ -62,22 +62,22 @@ jobs:
         run: |
           sed -i '1490s/fp->bpf_func = interpreters\[(round_up(stack_depth, 32) \/ 32) - 1\];/fp->bpf_func = (typeof(fp->bpf_func))interpreters[(round_up(stack_depth, 32) \/ 32) - 1];/' kernel/bpf/core.c
           
-      - name: 精确修复 bonding 驱动代码
+      - name: 【最终修复】智能替换高版本API并确保编译通过
         run: |
-          # 创建一个补丁文件来修复代码
-          cat > bonding_fix.patch << 'EOF'
+          set -e  # 遇到任何错误立即停止，便于排查
+
+          # 1. 首先尝试使用补丁（容忍行号偏移）
+          cat > /tmp/fix_bonding.patch << 'EOF'
           --- a/drivers/net/bonding/bond_main.c
           +++ b/drivers/net/bonding/bond_main.c
-          @@ -2330,12 +2330,18 @@ static bool bond_validate_src_mac(struct bonding *bond, __be32 ip)
+          @@ -2330,13 +2330,23 @@
                    return false;
            }
            
-          +static bool bond_upper_dev_walk(struct net_device *upper_dev, void *data)
+          +static bool bond_upper_dev_check(struct net_device *upper_dev, void *data)
           +{
-          +       __be32 *ip = (__be32 *)data;
-          +       if (*ip == bond_confirm_addr(upper_dev, 0, *ip))
-          +               return true;
-          +       return false;
+          +       __be32 *ip_ptr = data;
+          +       return (*ip_ptr == bond_confirm_addr(upper_dev, 0, *ip_ptr));
           +}
           +
            static bool bond_validate_src_mac(struct bonding *bond, __be32 ip)
@@ -88,13 +88,45 @@ jobs:
           -                       return true;
           -               }
           -       }
-          +       if (netdev_walk_all_upper_dev_rcu(bond->dev, bond_upper_dev_walk, &ip))
+          +       if (netdev_walk_all_upper_dev_rcu(bond->dev, bond_upper_dev_check, &ip))
           +               return true;
                   return false;
            }
           EOF
-          # 应用补丁
-          patch -p1 -l -i bonding_fix.patch || echo "Patch applied (with possible offsets)."
+
+          echo "尝试应用补丁..."
+          if patch -p1 -l -i /tmp/fix_bonding.patch; then
+            echo "✅ 补丁应用成功。"
+          else
+            echo "⚠️ 补丁应用有偏移，尝试直接替换代码..."
+
+            # 2. 补丁失败后的备用方案：直接搜索并替换代码块
+            sed -i 's/netdev_for_each_all_upper_dev_rcu(bond->dev, upper, iter) {[^}]*}/if (netdev_walk_all_upper_dev_rcu(bond->dev, bond_upper_dev_check, \&ip)) return true;/' drivers/net/bonding/bond_main.c
+
+            # 3. 确保回调函数存在（如果补丁没打上，手动插入）
+            if ! grep -q "bond_upper_dev_check" drivers/net/bonding/bond_main.c; then
+              sed -i '/static bool bond_validate_src_mac(struct bonding \*bond, __be32 ip)/i\
+static bool bond_upper_dev_check(struct net_device *upper_dev, void *data)\
+{\
+\    __be32 *ip_ptr = data;\
+\    return (*ip_ptr == bond_confirm_addr(upper_dev, 0, *ip_ptr));\
+\}\
+' drivers/net/bonding/bond_main.c
+            fi
+          fi
+
+          # 4. 最终验证：确保错误代码已被移除
+          if grep -n "netdev_for_each_all_upper_dev_rcu" drivers/net/bonding/bond_main.c; then
+            echo "❌ 修复失败，错误代码仍然存在。"
+            exit 1  # 主动报错停止流程，避免继续编译
+          else
+            echo "✅ 已验证：高版本API调用已被移除。"
+          fi
+
+          # 5. 双重保险：确保配置已禁用（即使代码修复，配置也保持一致）
+          echo "CONFIG_BONDING=n" >> arch/arm64/configs/merged_defconfig
+          echo "✅ 已禁用 bonding 驱动配置。"
+
        
       - name: Merge defconfig
         run: |
