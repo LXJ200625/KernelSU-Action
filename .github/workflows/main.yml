@@ -62,14 +62,12 @@ jobs:
         run: |
           sed -i '1490s/fp->bpf_func = interpreters\[(round_up(stack_depth, 32) \/ 32) - 1\];/fp->bpf_func = (typeof(fp->bpf_func))interpreters[(round_up(stack_depth, 32) \/ 32) - 1];/' kernel/bpf/core.c
           
-      - name: Fix bonding driver error PRECISE
+      - name: Disable bonding driver to avoid errors
         run: |
-          # 精确修复：只修改出错的函数调用
-          sed -i '2333s/netdev_for_each_all_upper_dev_rcu/netdev_walk_all_upper_dev_rcu/' drivers/net/bonding/bond_main.c
-          
-          # 修复后续的语法错误（删除多余括号和break）
-          sed -i '2336d' drivers/net/bonding/bond_main.c
-          sed -i '2335s/));/);/' drivers/net/bonding/bond_main.c
+          echo "CONFIG_BONDING=n" >> arch/arm64/configs/merged_defconfig
+          echo "CONFIG_BONDING_3AD=n" >> arch/arm64/configs/merged_defconfig
+          echo "CONFIG_BONDING_ALB=n" >> arch/arm64/configs/merged_defconfig
+          echo "# 完全禁用bonding相关驱动，确保编译通过"
        
       - name: Merge defconfig
         run: |
