@@ -62,12 +62,15 @@ jobs:
         run: |
           sed -i '1490s/fp->bpf_func = interpreters\[(round_up(stack_depth, 32) \/ 32) - 1\];/fp->bpf_func = (typeof(fp->bpf_func))interpreters[(round_up(stack_depth, 32) \/ 32) - 1];/' kernel/bpf/core.c
           
-      - name: Disable bonding driver to avoid errors
+      - name: 永久删除导致编译失败的bonding驱动
         run: |
-          echo "CONFIG_BONDING=n" >> arch/arm64/configs/merged_defconfig
-          echo "CONFIG_BONDING_3AD=n" >> arch/arm64/configs/merged_defconfig
-          echo "CONFIG_BONDING_ALB=n" >> arch/arm64/configs/merged_defconfig
-          echo "# 完全禁用bonding相关驱动，确保编译通过"
+          rm -rf drivers/net/bonding/
+          sed -i '/CONFIG_BONDING/d' .config
+          echo "CONFIG_BONDING=n" >> .config
+          echo "CONFIG_BONDING_3AD=n" >> .config
+          echo "CONFIG_BONDING_ALB=n" >> .config
+          echo "✅ 已物理删除bonding驱动，不可能再报错"
+
        
       - name: Merge defconfig
         run: |
