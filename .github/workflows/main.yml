@@ -57,7 +57,11 @@ jobs:
       - name: Get latest kernel commit id
         run: |
           echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
-
+      
+      - name: Fix BPF type mismatch
+        run: |
+          sed -i '1490s/fp->bpf_func = interpreters\[(round_up(stack_depth, 32) \/ 32) - 1\];/fp->bpf_func = (typeof(fp->bpf_func))interpreters[(round_up(stack_depth, 32) \/ 32) - 1];/' kernel/bpf/core.c
+        
       - name: Merge defconfig
         run: |
           while read -r line; do
