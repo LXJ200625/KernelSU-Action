@@ -105,6 +105,7 @@ jobs:
           echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
           echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
           echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
