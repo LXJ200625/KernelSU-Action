@@ -114,6 +114,12 @@ jobs:
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           " | tee -a $GITHUB_ENV
+          
+      - name: Disable CONFIG_LTO_CLANG (force)
+        run: |
+          sed -i '/CONFIG_LTO_CLANG/d' arch/arm64/configs/merged_defconfig
+          echo "# CONFIG_LTO_CLANG is not set" >> arch/arm64/configs/merged_defconfig
+   
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
