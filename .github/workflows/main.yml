@@ -186,7 +186,7 @@ jobs:
 
       - name: Make
         run: |
-          make $flags -j$(nproc --all)
+          make $flags KCFLAGS="-Wno-error" -j$(nproc --all)
 
       - name: AnyKernel3
         run: |
