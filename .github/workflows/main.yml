@@ -1,7 +1,7 @@
 name: Check and Build
 
 env:
-  kernel_repository: AOSP-jason/android_kernel_xiaomi_jason
+  kernel_repository: LXJ200625/aosp_kernel_xiaomi_jason
   kernel_branch: lineage-18.1
   device: jason
   clang_version: r365631c
