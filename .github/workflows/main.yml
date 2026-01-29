@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LineageOS/android_kernel_xiaomi_sdm660
-  kernel_branch: lineage-20
-  device: wayne
-  clang_version: r416183b
+  kernel_repository: LXJ200625/uixdess_kernel_xiaomi_sdm710
+  kernel_branch: android12
+  device: sirius
+  clang_version: r365631c
   defconfig: |
-    vendor/xiaomi/sdm660_defconfig
-    vendor/xiaomi/wayne.config
+    sirius_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
