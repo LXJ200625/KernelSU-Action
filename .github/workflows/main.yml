@@ -6,7 +6,7 @@ env:
   device: jason
   clang_version: r365631c
   defconfig: |
-    jason_defconfig
+    jason-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
