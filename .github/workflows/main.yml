@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/uixdess_kernel_xiaomi_sdm710
-  kernel_branch: android12
-  device: sirius
+  kernel_repository: AOSP-jason/android_kernel_xiaomi_jason
+  kernel_branch: lineage-18.1
+  device: jason
   clang_version: r365631c
   defconfig: |
-    sirius_defconfig
+    jason_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
