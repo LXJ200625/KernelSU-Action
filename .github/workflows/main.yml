@@ -1,7 +1,7 @@
 name: Check and Build
 env:
-  kernel_repository: xiaomi-sdm660/android_kernel_xiaomi_sdm660
-  kernel_branch: 11-EAS
+  kernel_repository: iamehsangh/android_kernel_xiaomi_jason
+  kernel_branch: eas-los-bpf-test
   device: jason
   clang_version: r365631c
   defconfig: |
