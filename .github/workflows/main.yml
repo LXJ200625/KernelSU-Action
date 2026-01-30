@@ -1,11 +1,11 @@
 name: Check and Build
 env:
-  kernel_repository: iamehsangh/android_kernel_xiaomi_jason
-  kernel_branch: eas-los-bpf-test
-  device: jason
+  kernel_repository: MiCode/Xiaomi_Kernel_OpenSource
+  kernel_branch: sirius-q-oss
+  device: sirius
   clang_version: r365631c
   defconfig: |
-    jason_defconfig
+    sirius_user_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
