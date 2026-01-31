@@ -4,7 +4,7 @@ env:
   kernel_repository: duckyduckG/android_kernel_xiaomi_sdm845_419
   kernel_branch: lineage-23.1_xiaomi
   device: dipper
-  clang_version: r383902
+  clang_version: r416183b
   defconfig: |
     vendor/xiaomi/dipper.config
     vendor/xiaomi/sdm845-common.config
