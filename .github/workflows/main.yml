@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: Kyuofox-Studio/android_kernel_xiaomi_lmi
-  kernel_branch: lineage-22
+  kernel_repository: crdroidandroid/android_kernel_xiaomi_violet
+  kernel_branch: 14.0-ksu
   device: violet
-  clang_version: r416183b
+  clang_version: r383902
   defconfig: |
-    lmi_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
