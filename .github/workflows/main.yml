@@ -1,13 +1,14 @@
 name: Build Kernel
 
 env:
-  kernel_repository: LineageOS/android_kernel_xiaomi_sdm845
-  kernel_branch: lineage-22.2
+  kernel_repository: duckyduckG/android_kernel_xiaomi_sdm845_419
+  kernel_branch: lineage-23.1_xiaomi
   device: dipper
   clang_version: r383902
   defconfig: |
     vendor/xiaomi/dipper.config
-    vendor/xiaomi/mi845_defconfig
+    vendor/xiaomi/sdm845-common.config
+    vendor/sdm845-perf_defconfig
   kernel_patch: |
 
 on:
