@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: kyasu/android_kernel_xiaomi_sdm710
-  kernel_branch: lineage-23.1
+  kernel_branch: lineage-23.0
   device: sirius
   clang_version: r416183b
   defconfig: |
