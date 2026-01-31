@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: diphons/D8G_Kernel
-  kernel_branch: sdm845
-  device: dippr
-  clang_version: r450784e
+  kernel_repository: crdroidandroid/android_kernel_xiaomi_violet
+  kernel_branch: 14.0-ksu
+  device: violet
+  clang_version: r383902
   defconfig: |
-    sdm845-perf_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
