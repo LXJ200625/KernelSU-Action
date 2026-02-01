@@ -6,7 +6,7 @@ env:
   device: clover
   clang_version: r450784e
   defconfig: |
-    vendor/clover_defconfig
+    clover_defconfig
   kernel_patch: |
     # backport-path-umount.patch
   kernelsu_patch: |
