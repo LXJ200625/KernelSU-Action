@@ -1,14 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_sdm660_platina
-  kernel_branch: lineage-23.0
-  device: wayne
+  kernel_repository: 1582130940/android_kernel_xiaomi_sdm660
+  kernel_branch: lineage-20
+  device: clover
   clang_version: r450784e
   defconfig: |
-    vendor/sdm660-perf_defconfig
-    vendor/xiaomi/wayne.config
-    vendor/xiaomi/sdm660-common.config
+    vendor/clover_defconfig
   kernel_patch: |
     # backport-path-umount.patch
   kernelsu_patch: |
