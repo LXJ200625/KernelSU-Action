@@ -1,14 +1,14 @@
 name: Check and Build
 env:
-  kernel_repository: LXJ200625/kernel_xiaomi_violet
-  kernel_branch: rksu
+  kernel_repository: LXJ200625/violet-bpf-android14
+  kernel_branch: 14-bpf
   device: violet
   clang_version: r487747c
   defconfig: |
     vendor/violet-perf_defconfig
   kernel_patch: |
-  # 注释 Kernelsu 补丁配置
-  # kernelsu_patch: |
+   
+   kernelsu_patch: |
 on:
   workflow_dispatch:
     inputs:
@@ -17,27 +17,24 @@ on:
         type: boolean
         default: false
 jobs:
-  # 注释 KSU 版本检查 Job
-  # check_kernelsu_update:
-  #   name: Check KernelSU update
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check KernelSU version
-  #       id: check_kernelsu_version
-  #       run: |
-  #         local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
-  #         # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
-  #         remote_version=v3.0.0-30-legacy
-  #         echo local_version=$local_version | tee -a $GITHUB_OUTPUT
-  #         echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
-  #   outputs:
-  #     local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
-  #     remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
+   check_kernelsu_update:
+     name: Check KernelSU update
+     runs-on: ubuntu-latest
+     steps:
+       - name: Check KernelSU version
+         id: check_kernelsu_version
+         run: |
+           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+           # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
+           remote_version=v0.9.5
+           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
+           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
+     outputs:
+       local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
+       remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
   build:
     name: Build kernel
-    # 移除 KSU 版本检查的依赖
-    # needs: check_kernelsu_update
-    # 移除 KSU 版本对比的判断条件
+     needs: check_kernelsu_update
     if: inputs.allow_rebuild
     runs-on: ubuntu-latest
     permissions:
@@ -45,8 +42,7 @@ jobs:
     steps:
       - name: Set env
         run: |
-          # 注释 KSU 远程版本环境变量
-          # echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
+           echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
           if [[ "$clang_version" = "r"* ]] || [[ "$clang_version" = "latest" ]]; then
               clang_type=aosp
           else
@@ -86,14 +82,13 @@ jobs:
               echo "Merging defconfig: $line"
               cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
-      # 注释 KSU 集成步骤
-      # - name: Setup KernelSU
-      #   run: |
-      #     # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-      #     curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-      #     echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-      #     echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-      #     echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+       - name: Setup KernelSU
+         run: |
+           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
+           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+           echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+           echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+           echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
       - name: Apply kernel patch
         run: |
           while read -r line; do
@@ -103,16 +98,16 @@ jobs:
               echo "Applying kernel patch: $line"
               git apply "this-repo/patches/$line"
           done <<<"$kernel_patch"
-      # 注释 KSU 补丁应用步骤
-      # - name: Apply KernelSU patch
-      #   run: |
-      #     while read -r line; do
-      #         if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-      #             continue
-      #         fi
-      #         echo "Applying KernelSU patch: $line"
-      #         git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
-      #     done <<<"$kernelsu_patch"
+      
+       - name: Apply KernelSU patch
+         run: |
+           while read -r line; do
+               if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                   continue
+               fi
+               echo "Applying KernelSU patch: $line"
+               git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
+           done <<<"$kernelsu_patch"
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
         if: env.clang_type == 'aosp'
@@ -173,7 +168,6 @@ jobs:
           unzip AnyKernel3.zip
           cat >AnyKernel3-master/anykernel.sh <<EOF
           properties() { '
-          # 移除 KernelSU 版本信息
           kernel.string=$kernel_repository $kernel_branch for $device
           do.devicecheck=1
           do.modules=0
@@ -204,7 +198,6 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          # 移除 KSU 版本作为 tag
           tag_name: ${{ env.kernel_commit_id }}
           body: |
             Device:
@@ -213,8 +206,7 @@ jobs:
             https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
             Branch:
             ${{ env.kernel_branch }}
-            # 注释 KernelSU 相关发布信息
-            # KernelSU:
-            # https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
+             KernelSU:
+             https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
           files: |
             boot.zip
