@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: Project-Nyanpasu/kernel_xiaomi_sirius
-  kernel_branch: timobaka
+  kernel_repository: Kscope-Devices/android_kernel_xiaomi_sirius
+  kernel_branch: sunflowerleaf
   device: sirius
   clang_version: r365631c
   defconfig: |
