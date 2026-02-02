@@ -1,4 +1,6 @@
-name: Check and Build
+name: Check and Build Kernel
+
+# 环境变量：根据你的内核信息配置（无需修改）
 env:
   kernel_repository: xiaomi-sdm660/android_kernel_xiaomi_sdm660
   kernel_branch: 11.0-eas
@@ -7,170 +9,203 @@ env:
   defconfig: |
     jason_defconfig
   kernel_patch: |
-    
   kernelsu_patch: |
+
+# 触发方式：手动触发
 on:
   workflow_dispatch:
     inputs:
       allow_rebuild:
-        description: "Allow Rebuild"
+        description: "Allow Rebuild (忽略KernelSU版本检查)"
         type: boolean
         default: false
+
 jobs:
+  # 步骤1：检查KernelSU是否有更新（避免重复编译）
   check_kernelsu_update:
-    name: Check KernelSU update
+    name: Check KernelSU Update
     runs-on: ubuntu-latest
-    steps:
-      - name: Check KernelSU version
-        id: check_kernelsu_version
-        run: |
-          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
-          # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
-          remote_version=v0.9.5
-          echo local_version=$local_version | tee -a $GITHUB_OUTPUT
-          echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
-      local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
-      remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
+      remote_version: ${{ steps.get_remote_version.outputs.version }}
+      local_version: ${{ steps.get_local_version.outputs.version }}
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+        with:
+          path: this-repo
+      
+      - name: Get remote KernelSU version
+        id: get_remote_version
+        run: |
+          remote_version=$(curl -s https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r '.tag_name')
+          echo "version=$remote_version" >> $GITHUB_OUTPUT
+      
+      - name: Get local KernelSU version
+        id: get_local_version
+        run: |
+          if [ -f "this-repo/last_kernelsu_version" ]; then
+            local_version=$(cat this-repo/last_kernelsu_version)
+          else
+            local_version="0.0.0"
+          fi
+          echo "version=$local_version" >> $GITHUB_OUTPUT
+
+  # 步骤2：编译内核（依赖步骤1的版本检查）
   build:
-    name: Build kernel
+    name: Build Kernel for ${{ env.device }}
     needs: check_kernelsu_update
     if: inputs.allow_rebuild || needs.check_kernelsu_update.outputs.local_version != needs.check_kernelsu_update.outputs.remote_version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # 用22.04更稳定，适配工具链
     permissions:
       contents: write
     steps:
-      - name: Set env
+      - name: Set environment variables
         run: |
-          echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
-          # 移除Clang类型判断（无需再区分aosp/vanilla）
-          echo clang_type="" | tee -a $GITHUB_ENV
-          # 保留原clang_version配置，仅不使用
-          echo clang_version=${{ env.clang_version }} | tee -a $GITHUB_ENV
-      - name: Install packages
+          echo "kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }}" >> $GITHUB_ENV
+          echo "timestamp=$(date +%Y%m%d-%H%M)" >> $GITHUB_ENV
+
+      - name: Install required packages
         run: |
-          sudo apt update
+          sudo apt update -y
           sudo apt install -y \
-              binutils-arm-linux-gnueabi \
-              binutils-aarch64-linux-gnu \
-              gcc-aarch64-linux-gnu \
-              gcc-arm-linux-gnueabi \
-              g++-aarch64-linux-gnu \
-              g++-arm-linux-gnueabi
+            binutils-arm-linux-gnueabi \
+            binutils-aarch64-linux-gnu \
+            gcc-aarch64-linux-gnu \
+            gcc-arm-linux-gnueabi \
+            g++-aarch64-linux-gnu \
+            g++-arm-linux-gnueabi \
+            clang-${{ env.clang_version }} \
+            curl jq git make bc bison flex libssl-dev
+
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
           repository: ${{ env.kernel_repository }}
           ref: ${{ env.kernel_branch }}
-          submodules: recursive
-      - name: Checkout this repo
+          path: kernel
+          fetch-depth: 1
+
+      - name: Checkout this repo (patches/configs)
         uses: actions/checkout@v4
         with:
           path: this-repo
-          submodules: recursive
-      - name: Get latest kernel commit id
+          fetch-depth: 1
+
+      - name: Merge defconfig (with validation)
+        working-directory: kernel
         run: |
-          echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
-      - name: Merge defconfig
-        run: |
+          # 清空目标defconfig，避免重复配置
+          > arch/arm64/configs/merged_defconfig
           while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Merging defconfig: $line"
-              cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
-          done <<<"$defconfig"
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            # 校验defconfig是否存在
+            if [ ! -f "arch/arm64/configs/$line" ]; then
+              echo "ERROR: Defconfig '$line' not found in arch/arm64/configs!"
+              exit 1
+            fi
+            echo "Merging defconfig: $line"
+            cat arch/arm64/configs/$line >> arch/arm64/configs/merged_defconfig
+          done <<<"${{ env.defconfig }}"
+
       - name: Setup KernelSU
+        working-directory: kernel
         run: |
-          # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
-      - name: Apply kernel patch
-        run: |
-          while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Applying kernel patch: $line"
-              git apply "this-repo/patches/$line"
-          done <<<"$kernel_patch"
-      - name: Apply KernelSU patch
+          # 拉取KernelSU并集成
+          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- ${{ env.kernelsu_remote_version }}
+          # 添加KernelSU必需配置 + 解决stune符号依赖
+          echo 'CONFIG_KPROBES=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KSU=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_SCHED_STUNE=y' >> arch/arm64/configs/merged_defconfig
+
+      - name: Apply kernel patches (with validation)
+        working-directory: kernel
         run: |
           while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Applying KernelSU patch: $line"
-              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
-          done <<<"$kernelsu_patch"
-      - name: export flags
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            patch_path="../this-repo/patches/$line"
+            # 校验patch文件是否存在
+            if [ ! -f "$patch_path" ]; then
+              echo "ERROR: Kernel patch '$patch_path' not found!"
+              exit 1
+            fi
+            echo "Applying kernel patch: $line"
+            git apply "$patch_path"
+          done <<<"${{ env.kernel_patch }}"
+
+      - name: Apply KernelSU patches (with validation)
+        working-directory: kernel
         run: |
-          echo flags=" \
+          while read -r line; do
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            patch_path="../this-repo/patches/$line"
+            # 校验patch文件是否存在
+            if [ ! -f "$patch_path" ]; then
+              echo "ERROR: KernelSU patch '$patch_path' not found!"
+              exit 1
+            fi
+            echo "Applying KernelSU patch: $line"
+            git apply -p2 --directory KernelSU/kernel "$patch_path"
+          done <<<"${{ env.kernelsu_patch }}"
+
+      - name: Export compile flags (fix GCC/Clang compatibility)
+        working-directory: kernel
+        run: |
+          echo flags="\
           O=out \
           ARCH=arm64 \
           CROSS_COMPILE=aarch64-linux-gnu- \
-          CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+          KCFLAGS=\"-Wno-error -Wno-gcc-compat -Wno-parentheses-equality -Wno-constant-conversion -Wno-section -Wno-unneeded-internal-declaration\" \
           " | tee -a $GITHUB_ENV
-          
-      - name: Disable CONFIG_LTO_CLANG (force)
+
+      - name: Disable CONFIG_LTO_CLANG (避免编译失败)
+        working-directory: kernel
         run: |
-          sed -i '/CONFIG_LTO_CLANG/d' arch/arm64/configs/merged_defconfig
-          echo "# CONFIG_LTO_CLANG is not set" >> arch/arm64/configs/merged_defconfig
-   
+          echo 'CONFIG_LTO_CLANG=n' >> arch/arm64/configs/merged_defconfig
+
       - name: Make defconfig
+        working-directory: kernel
         run: |
-          make $flags merged_defconfig
-      - name: Make
+          make ${{ env.flags }} merged_defconfig
+
+      - name: Build kernel
+        working-directory: kernel
         run: |
-          make $flags KCFLAGS="-Wno-error" -j$(nproc --all)
-      - name: AnyKernel3
+          make ${{ env.flags }} -j$(nproc --all)
+
+      - name: Prepare flashable zip (AnyKernel3)
         run: |
-          curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
-          unzip AnyKernel3.zip
-          cat >AnyKernel3-master/anykernel.sh <<EOF
-          properties() { '
-          kernel.string=$kernel_repository $kernel_branch with KernelSU $kernelsu_remote_version for $device
-          do.devicecheck=1
-          do.modules=0
-          do.cleanup=1
-          do.cleanuponabort=1
-          device.name1=$device
-          '; }
-          block=auto
-          is_slot_device=auto
-          ramdisk_compression=auto
-          patch_vbmeta_flag=auto
-          . tools/ak3-core.sh
-          split_boot
-          flash_boot
-          EOF
-          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
-          if [ -f out/arch/arm64/boot/dtbo.img ]; then
-              cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
-          fi
-          cd AnyKernel3-master
-          rm -rf .git* README.md
-          zip -r ../boot.zip *
-      - name: "Upload artifact"
+          # 拉取AnyKernel3模板
+          git clone https://github.com/osm0sis/AnyKernel3.git anykernel
+          # 复制编译好的镜像
+          cp kernel/out/arch/arm64/boot/Image.gz-dtb anykernel/
+          # 配置AnyKernel3（根据你的设备修改，这里适配jason）
+          sed -i "s/device.name1=/device.name1=${{ env.device }}/" anykernel/anykernel.sh
+          sed -i "s/device.name2=/device.name2=jason/" anykernel/anykernel.sh
+          # 打包
+          cd anykernel
+          zip -r ../kernel-${{ env.device }}-${{ env.timestamp }}.zip .
+
+      - name: Upload compiled kernel
         uses: actions/upload-artifact@v4
         with:
-          name: boot
-          path: AnyKernel3-master/*
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ env.kernelsu_remote_version }}
-          body: |
-            Device:
-            ${{ env.device }}
-            Kernel:
-            https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
-            Branch:
-            ${{ env.kernel_branch }}
-            KernelSU:
-            https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
-          files: |
-            boot.zip
+          name: kernel-${{ env.device }}-${{ env.timestamp }}
+          path: kernel-${{ env.device }}-${{ env.timestamp }}.zip
+
+      - name: Update local KernelSU version
+        working-directory: this-repo
+        run: |
+          echo ${{ env.kernelsu_remote_version }} > last_kernelsu_version
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add last_kernelsu_version
+          git commit -m "Update KernelSU version to ${{ env.kernelsu_remote_version }}"
+          git push
