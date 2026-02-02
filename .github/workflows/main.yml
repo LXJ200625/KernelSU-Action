@@ -1,11 +1,11 @@
 name: Check and Build
 env:
-  kernel_repository: MiCode/Xiaomi_Kernel_OpenSource
-  kernel_branch: sirius-q-oss
+  kernel_repository: xiaomi-sdm660/android_kernel_xiaomi_sdm660
+  kernel_branch: 11.0-eas
   device: sirius
   clang_version: r365631c
   defconfig: |
-    sirius_user_defconfig
+    jason_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
