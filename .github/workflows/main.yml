@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: LXJ200625/violet-bpf-android14
-  kernel_branch: 14-ksu
+  kernel_branch: 14-bpf
   device: violet
   clang_version: r416183b
   defconfig: |
