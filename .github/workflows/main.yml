@@ -181,6 +181,16 @@ jobs:
           CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           " | tee -a $GITHUB_ENV
 
+      # ========== 新增的清理步骤 ==========
+      - name: Clean build directory
+        run: |
+          make $flags clean || true
+          make $flags mrproper || true
+          rm -rf out
+          mkdir -p out
+          find . -name "*.tab.c" -o -name "*.tab.h" -o -name "*.lex.c" | xargs rm -f
+      # ========== 清理步骤结束 ==========
+
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
