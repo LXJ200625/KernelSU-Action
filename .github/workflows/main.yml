@@ -10,7 +10,7 @@ env:
     vendor/xiaomi/sdm845-debug.config
     vendor/xiaomi/sdm845-common.config
   kernel_patch: |
-    # backport-path-umount.patch
+  
   kernelsu_patch: |
 
 on:
@@ -99,10 +99,10 @@ jobs:
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-         # curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-         # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-         # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-         # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
