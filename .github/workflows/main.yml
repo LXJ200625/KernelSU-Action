@@ -1,12 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/android_kernel_xiaomi_sdm710
-  kernel_branch: lineage-22.2
-  device: sirius
+  kernel_repository: duckyduckG/android_kernel_xiaomi_sdm845_419
+  kernel_branch: perf-SukiSU
+  device: dipper
   clang_version: r487747c
   defconfig: |
-    sirius_defconfig
+    vendor/sdm845-perf_defconfig
+    vendor/xiaomi/sdm845-debug.config
+    vendor/xiaomi/sdm845-common.config
   kernel_patch: |
     # backport-path-umount.patch
   kernelsu_patch: |
@@ -97,10 +99,10 @@ jobs:
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+         # curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+         # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
