@@ -2,11 +2,11 @@ name: Check and Build
 
 env:
   kernel_repository: duckyduckG/android_kernel_xiaomi_sdm845_419
-  kernel_branch: perf-SukiSU
+  kernel_branch: perf-dipper-dsp
   device: dipper
   clang_version: r487747c
   defconfig: |
-    vendor/sdm845-perf_defconfig
+    vendor/sdm845-stock_defconfig
     vendor/xiaomi/sdm845-common.config
     vendor/xiaomi/dipper.config
   kernel_patch: |
