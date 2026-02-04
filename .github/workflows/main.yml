@@ -1,12 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: crdroidandroid/android_kernel_xiaomi_violet
-  kernel_branch: 14.0-ksu
-  device: violet
+  kernel_repository: duckyduckG/android_kernel_xiaomi_sdm845_419
+  kernel_branch: lineage-23.2_xiaomi
+  device: dipper
   clang_version: r383902
   defconfig: |
-    vendor/violet-perf_defconfig
+    vendor/sdm845-perf_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/xiaomi/sdm845-common.config
   kernel_patch: |
     
   kernelsu_patch: |
