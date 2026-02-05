@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_violet_20260203
-  kernel_branch: 4.14-352
+  kernel_repository: ryzen-kernel/nethunter_kernel_xiaomi_violet
+  kernel_branch: R
   device: violet
   clang_version: r416183b
   defconfig: |
-    vendor/violet_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
