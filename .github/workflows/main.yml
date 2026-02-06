@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: NRanjan-17/kernel_xiaomi_violet
-  kernel_branch: thirteen
+  kernel_repository: LXJ200625/4.14.325-kernel-violet
+  kernel_branch: 4.14.325-13.0
   device: violet
   clang_version: r416183b
   defconfig: |
@@ -99,10 +99,10 @@ jobs:
         run: |
           rm -rf KernelSU
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-         # curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-         # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-         # echo 'CONFIG_HAVE_KPROBES' >>arch/arm64/configs/merged_defconfig
-         # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
