@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: ryzen-kernel/nethunter_kernel_xiaomi_violet
-  kernel_branch: R
+  kernel_repository: NRanjan-17/kernel_xiaomi_violet
+  kernel_branch: thirteen
   device: violet
   clang_version: r416183b
   defconfig: |
