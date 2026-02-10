@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/sdm660-jason
-  kernel_branch: main-15
+  kernel_repository: LineageOS-jason/android_kernel_xiaomi_sdm660
+  kernel_branch: lineage-20-new
   device: jason
   clang_version: r416183b
   defconfig: |
-    jason_defconfig
+    vendor/xiaomi/jason.config
+    vendor/xiaimi/sdm660_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
