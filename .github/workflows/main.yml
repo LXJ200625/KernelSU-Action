@@ -106,29 +106,16 @@ jobs:
                       echo "Warning: Unknown file type $line"; continue;;
               esac
           done <<<"$kernel_patch"
+          
       - name: Setup ReSukiSU
         run: |
-          # 执行ReSukiSU自动集成脚本
-          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
-          # 【修改2】补充ReSukiSU所有必需内核配置（核心！缺一不可）
-          echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KALLSYMS=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KALLSYMS_ALL=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_DEBUG_INFO=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_DEBUG_INFO_BTF=y' >>arch/arm64/configs/merged_defconfig
-      # 【修改3】删除空的KernelSU patch步骤（无实际作用，直接注释/删除）
-      # - name: Apply KernelSU patch
-      #   run: |
-      #     while read -r line; do
-      #         if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-      #             continue
-      #         fi
-      #         echo "Applying KernelSU patch: $line"
-      #         git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
-      #     done <<<"$kernelsu_patch"
+    # 使用官方脚本自动集成，自动处理所有钩子
+        curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
+    # 补充必需的内核配置
+        echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
+        echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+        echo 'CONFIG_KALLSYMS=y' >>arch/arm64/configs/merged_defconfig
+
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
         if: env.clang_type == 'aosp'
