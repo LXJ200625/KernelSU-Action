@@ -1,4 +1,5 @@
 name: Check and Build with ReSukiSU
+
 env:
   kernel_repository: LXJ200625/sdm660-jason
   kernel_branch: main-15
@@ -9,6 +10,7 @@ env:
   kernel_patch: |
     syscall_hook_patches.sh
   kernelsu_patch: |
+
 on:
   workflow_dispatch:
     inputs:
@@ -16,6 +18,7 @@ on:
         description: "Allow Rebuild"
         type: boolean
         default: false
+
 jobs:
   check_kernelsu_update:
     name: Check ReSukiSU update
@@ -24,10 +27,10 @@ jobs:
       - name: Check ReSukiSU version
         id: check_kernelsu_version
         run: |
-          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name || echo "v0.0.0")
+          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
           remote_version=$(curl -L https://api.github.com/repos/ReSukiSU/ReSukiSU/releases/latest | jq -r .tag_name)
-          echo "local_version=$local_version" >> $GITHUB_OUTPUT
-          echo "remote_version=$remote_version" >> $GITHUB_OUTPUT
+          echo local_version=$local_version | tee -a $GITHUB_OUTPUT
+          echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
       local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
       remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
@@ -40,25 +43,28 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Set environment variables
+      - name: Set env
         run: |
-          echo "kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }}" >> $GITHUB_ENV
+          echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
+
           if [[ "$clang_version" = "r"* ]] || [[ "$clang_version" = "latest" ]]; then
-              echo "clang_type=aosp" >> $GITHUB_ENV
+              clang_type=aosp
           else
-              echo "clang_type=vanilla" >> $GITHUB_ENV
+              clang_type=vanilla
           fi
+          echo clang_type=$clang_type | tee -a $GITHUB_ENV
+
           if [[ "$clang_version" = "latest" ]]; then
               clang_version=$(curl -L https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants | grep -Eo 'r[0-9]{6}[a-z]?[0-9]?')
-              echo "clang_version=$clang_version" >> $GITHUB_ENV
+              echo clang_version=$clang_version | tee -a $GITHUB_ENV
           fi
 
-      - name: Install build dependencies
+      - name: Install packages
         run: |
-          sudo apt update && sudo apt install -y \
+          sudo apt update
+          sudo apt install -y \
               binutils-arm-linux-gnueabi \
-              binutils-aarch64-linux-gnu \
-              git wget curl jq make gcc g++ flex bison libssl-dev bc
+              binutils-aarch64-linux-gnu
 
       - name: Checkout kernel source
         uses: actions/checkout@v4
@@ -67,79 +73,98 @@ jobs:
           ref: ${{ env.kernel_branch }}
           submodules: recursive
 
-      - name: Checkout this workflow repo
+      - name: Checkout this repo
         uses: actions/checkout@v4
         with:
           path: this-repo
           submodules: recursive
 
-      - name: Get kernel commit ID
+      - name: Get latest kernel commit id
         run: |
-          echo "kernel_commit_id=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
 
       - name: Merge defconfig
         run: |
-          > arch/arm64/configs/merged_defconfig
           while read -r line; do
               if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
                   continue
               fi
               echo "Merging defconfig: $line"
-              cat "arch/arm64/configs/$line" >> "arch/arm64/configs/merged_defconfig"
-          done <<< "$defconfig"
+              cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
+          done <<<"$defconfig"
+
+      - name: Setup ReSukiSU
+        run: |
+          # 使用自定義的 ReSukiSU 倉庫作為 KernelSU 源
+          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
+          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply syscall hook patches
+        run: |
+          # 處理內核補丁，支持 .patch 文件和 .sh 腳本
+          while read -r line; do
+              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                  continue
+              fi
+              
+              # 獲取文件擴展名
+              extension="${line##*.}"
+              
+              case "$extension" in
+                  "patch")
+                      echo "Applying kernel patch: $line"
+                      if [ ! -f "this-repo/patches/$line" ]; then
+                          echo "Warning: Patch file 'this-repo/patches/$line' not found, skipping..."
+                          continue
+                      fi
+                      
+                      # 檢查補丁文件是否為空
+                      if [ ! -s "this-repo/patches/$line" ]; then
+                          echo "Warning: Patch file 'this-repo/patches/$line' is empty, skipping..."
+                          continue
+                      fi
+                      
+                      git apply "this-repo/patches/$line" || {
+                          echo "Error: Failed to apply patch '$line'"
+                          exit 1
+                      }
+                      ;;
+                  "sh")
+                      echo "Executing patch script: $line"
+                      if [ ! -f "this-repo/patches/$line" ]; then
+                          echo "Warning: Script file 'this-repo/patches/$line' not found, skipping..."
+                          continue
+                      fi
+                      
+                      # 確保腳本可執行
+                      chmod +x "this-repo/patches/$line"
+                      
+                      # 執行腳本，傳入內核源碼根目錄作為參數
+                      echo "Running $line with kernel source path: $(pwd)"
+                      bash "this-repo/patches/$line" "$(pwd)" || {
+                          echo "Error: Failed to execute script '$line'"
+                          exit 1
+                      }
+                      ;;
+                  *)
+                      echo "Warning: Unknown file type '$line', skipping..."
+                      ;;
+              esac
+          done <<<"$kernel_patch"
+
+      - name: Apply KernelSU patch
         run: |
           while read -r line; do
               if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
                   continue
               fi
-              extension="${line##*.}"
-              case "$extension" in
-                  "patch")
-                      echo "Applying kernel patch: $line"
-                      if [ ! -f "this-repo/patches/$line" ]; then
-                          echo "Error: Patch $line not found"
-                          exit 1
-                      fi
-                      git apply "this-repo/patches/$line" || { echo "Error: Failed to apply $line"; exit 1; }
-                      ;;
-                  "sh")
-                      echo "Executing patch script: $line"
-                      if [ ! -f "this-repo/patches/$line" ]; then
-                          echo "Error: Script $line not found"
-                          exit 1
-                      fi
-                      chmod +x "this-repo/patches/$line"
-                      bash "this-repo/patches/$line" "$(pwd)" || { echo "Error: Failed to execute $line"; exit 1; }
-                      ;;
-                  *)
-                      echo "Warning: Unknown file type for $line"
-                      ;;
-              esac
-          done <<< "$kernel_patch"
+              echo "Applying KernelSU patch: $line"
+              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
+          done <<<"$kernelsu_patch"
 
-      - name: Setup ReSukiSU
-        run: |
-          # 自动集成 ReSukiSU
-          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
-          
-          # 修复 4.4 内核 seccomp 头文件检查问题
-          sed -i 's/seccomp_types.h/seccomp.h/' drivers/kernelsu/Kbuild
-          
-          # 添加必需的内核配置
-          cat >> arch/arm64/configs/merged_defconfig <<EOF
-CONFIG_KSU=y
-CONFIG_KPROBES=y
-CONFIG_HAVE_KPROBES=y
-CONFIG_KPROBE_EVENTS=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_ALL=y
-CONFIG_DEBUG_INFO=y
-# CONFIG_DEBUG_INFO_BTF is not set # 4.4 内核不支持 BTF，禁用
-EOF
-
-      - name: Restore AOSP-Clang from cache
+      - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
         if: env.clang_type == 'aosp'
         uses: actions/cache/restore@v4
@@ -147,100 +172,115 @@ EOF
           path: aosp-clang
           key: aosp-clang-${{ env.clang_version }}
 
-      - name: Download AOSP-Clang
+      - name: "AOSP-Clang: Download"
         id: aosp_clang_download
         if: env.clang_type == 'aosp' && steps.aosp_clang_restore.outputs.cache-hit != 'true'
         run: |
           aosp_clang_branch=$(
               case "$clang_version" in
-                  r365631c) echo "android11-release" ;;
-                  r383902 | r416183b) echo "master-kernel-build-2021" ;;
-                  r450784e) echo "master-kernel-build-2022" ;;
-                  r487747c) echo "main-kernel-build-2023" ;;
-                  *) echo "main" ;;
+              r365631c ) echo android11-release;;
+              r383902 | r416183b) echo master-kernel-build-2021 ;;
+              r450784e) echo master-kernel-build-2022 ;;
+              r487747c) echo main-kernel-build-2023 ;;
+              *) echo main ;;
               esac
           )
           mkdir -p aosp-clang
-          curl -L "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz" | tar xz -C aosp-clang
+          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz | tar xz -C aosp-clang
 
-      - name: Save AOSP-Clang to cache
+      - name: "AOSP-Clang: Save"
+        id: aosp_clang_save
         if: env.clang_type == 'aosp' && steps.aosp_clang_download.outcome == 'success'
         uses: actions/cache/save@v4
         with:
           path: aosp-clang
           key: aosp-clang-${{ env.clang_version }}
 
-      - name: Set up AOSP-Clang
+      - name: "AOSP-Clang: Setup"
         if: env.clang_type == 'aosp'
         run: |
-          echo "PATH=$(pwd)/aosp-clang/bin:$PATH" >> $GITHUB_ENV
+          echo PATH=$(pwd)/aosp-clang/bin:$PATH | tee -a $GITHUB_ENV
 
-      - name: Set up Vanilla-Clang
+      - name: "Vanilla-Clang: Setup"
         if: env.clang_type == 'vanilla'
         run: |
           curl -L https://apt.llvm.org/llvm.sh | sudo bash -s -- $clang_version
-          echo "PATH=/usr/lib/llvm-$clang_version/bin:$PATH" >> $GITHUB_ENV
+          echo PATH=/usr/lib/llvm-$clang_version/bin:$PATH | tee -a $GITHUB_ENV
 
-      - name: Set build flags
+      - name: export flags
         run: |
-          echo "flags= \
+          echo flags=" \
           O=out \
           ARCH=arm64 \
           LLVM=1 \
           LLVM_IAS=1 \
           CROSS_COMPILE=aarch64-linux-gnu- \
-          CROSS_COMPILE_ARM32=arm-linux-gnueabi-" >> $GITHUB_ENV
+          CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          " | tee -a $GITHUB_ENV
 
-      - name: Generate defconfig
+      - name: Make defconfig
         run: |
           make $flags merged_defconfig
 
-      - name: Build kernel
+      - name: Make
         run: |
-          make $flags -j$(nproc) 2>&1 | tee build.log
+          make $flags -j$(nproc --all)
 
-      - name: Prepare AnyKernel3
+      - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
-          unzip -q AnyKernel3.zip
-          cat > AnyKernel3-master/anykernel.sh <<EOF
-properties() {
-kernel.string=$kernel_repository $kernel_branch with ReSukiSU $kernelsu_remote_version for $device
-do.devicecheck=1
-do.modules=0
-do.cleanup=1
-do.cleanuponabort=1
-device.name1=$device
-}
-block=auto
-is_slot_device=auto
-ramdisk_compression=auto
-patch_vbmeta_flag=auto
-. tools/ak3-core.sh
-split_boot
-flash_boot
-EOF
+          unzip AnyKernel3.zip
+
+          cat >AnyKernel3-master/anykernel.sh <<EOF
+          properties() { '
+          kernel.string=$kernel_repository $kernel_branch with ReSukiSU $kernelsu_remote_version for $device
+          do.devicecheck=1
+          do.modules=0
+          do.cleanup=1
+          do.cleanuponabort=1
+          device.name1=$device
+          '; }
+
+          block=auto
+          is_slot_device=auto
+          ramdisk_compression=auto
+          patch_vbmeta_flag=auto
+
+          . tools/ak3-core.sh
+          split_boot
+          flash_boot
+          EOF
+
           cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
-          [ -f out/arch/arm64/boot/dtbo.img ] && cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
+          if [ -f out/arch/arm64/boot/dtbo.img ]; then
+              cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
+          fi
+
           cd AnyKernel3-master
           rm -rf .git* README.md
-          zip -rq ../boot.zip *
+          zip -r ../boot.zip *
 
-      - name: Upload boot image
+      - name: "Upload artifact"
         uses: actions/upload-artifact@v4
         with:
           name: boot
-          path: boot.zip
+          path: AnyKernel3-master/*
 
-      - name: Create GitHub Release
+      - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.kernelsu_remote_version }}
           body: |
-            Device: ${{ env.device }}
-            Kernel: https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
-            Branch: ${{ env.kernel_branch }}
-            ReSukiSU: https://github.com/ReSukiSU/ReSukiSU/releases/tag/${{ env.kernelsu_remote_version }}
-          files: boot.zip
-          draft: false
-          prerelease: false
+            Device:
+            ${{ env.device }}
+
+            Kernel:
+            https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
+
+            Branch:
+            ${{ env.kernel_branch }}
+
+            ReSukiSU (Custom KernelSU):
+            https://github.com/ReSukiSU/ReSukiSU/releases/tag/${{ env.kernelsu_remote_version }}
+          files: |
+            boot.zip
