@@ -1,4 +1,4 @@
-name: Check and Build with ReSukiSU
+name: Check and Build
 env:
   kernel_repository: LXJ200625/sdm660-jason
   kernel_branch: main-15
@@ -7,8 +7,7 @@ env:
   defconfig: |
     jason_defconfig
   kernel_patch: |
-    syscall_hook_patches.sh
-  kernelsu_patch: |
+   # backport-path-umount.patch
 on:
   workflow_dispatch:
     inputs:
@@ -17,32 +16,31 @@ on:
         type: boolean
         default: false
 jobs:
-  check_kernelsu_update:
+  check_resukisu_update:
     name: Check ReSukiSU update
     runs-on: ubuntu-latest
     steps:
       - name: Check ReSukiSU version
-        id: check_kernelsu_version
+        id: check_resukisu_version
         run: |
-          # 【报错修复】无最新release时jq解析报错，加|| echo "v0.0.0"兜底
-          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name || echo "v0.0.0")
+          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
           remote_version=$(curl -L https://api.github.com/repos/ReSukiSU/ReSukiSU/releases/latest | jq -r .tag_name)
           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
-      local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
-      remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
+      local_version: ${{ steps.check_resukisu_version.outputs.local_version }}
+      remote_version: ${{ steps.check_resukisu_version.outputs.remote_version }}
   build:
     name: Build kernel
-    needs: check_kernelsu_update
-    if: inputs.allow_rebuild || needs.check_kernelsu_update.outputs.local_version != needs.check_kernelsu_update.outputs.remote_version
+    needs: check_resukisu_update
+    if: inputs.allow_rebuild || needs.check_resukisu_update.outputs.local_version != needs.check_resukisu_update.outputs.remote_version
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - name: Set env
         run: |
-          echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
+          echo resukisu_remote_version=${{ needs.check_resukisu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
           if [[ "$clang_version" = "r"* ]] || [[ "$clang_version" = "latest" ]]; then
               clang_type=aosp
           else
@@ -58,9 +56,7 @@ jobs:
           sudo apt update
           sudo apt install -y \
               binutils-arm-linux-gnueabi \
-              binutils-aarch64-linux-gnu \
-              # 【报错修复】补充4.4内核编译必需依赖，原依赖不全导致隐性编译失败
-              flex bison libssl-dev bc gcc g++ git wget curl jq
+              binutils-aarch64-linux-gnu
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
@@ -84,87 +80,22 @@ jobs:
               echo "Merging defconfig: $line"
               cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
-      # 【报错修复】核心顺序调整：先打钩子补丁，再执行ReSukiSU Setup，否则检测不到钩子
-      - name: Apply syscall hook patches
+      - name: Setup ReSukiSU
         run: |
-          # 處理內核補丁，支持 .patch 文件和 .sh 腳本
+          # ReSukiSU官方自动集成脚本
+          curl -LSs https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh | bash -s -- $resukisu_remote_version
+          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+      - name: Apply kernel patch
+        run: |
           while read -r line; do
               if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
                   continue
               fi
-              
-              # 獲取文件擴展名
-              extension="${line##*.}"
-              
-              case "$extension" in
-                  "patch")
-                      echo "Applying kernel patch: $line"
-                      if [ ! -f "this-repo/patches/$line" ]; then
-                          echo "Warning: Patch file 'this-repo/patches/$line' not found, skipping..."
-                          continue
-                      fi
-                      
-                      # 檢查補丁文件是否為空
-                      if [ ! -s "this-repo/patches/$line" ]; then
-                          echo "Warning: Patch file 'this-repo/patches/$line' is empty, skipping..."
-                          continue
-                      fi
-                      
-                      git apply "this-repo/patches/$line" || {
-                          echo "Error: Failed to apply patch '$line'"
-                          exit 1
-                      }
-                      ;;
-                  "sh")
-                      echo "Executing patch script: $line"
-                      if [ ! -f "this-repo/patches/$line" ]; then
-                          echo "Warning: Script file 'this-repo/patches/$line' not found, skipping..."
-                          continue
-                      fi
-                      
-                      # 確保腳本可執行
-                      chmod +x "this-repo/patches/$line"
-                      
-                      # 執行腳本，傳入內核源碼根目錄作為參數
-                      echo "Running $line with kernel source path: $(pwd)"
-                      bash "this-repo/patches/$line" "$(pwd)" || {
-                          echo "Error: Failed to execute script '$line'"
-                          exit 1
-                      }
-                      ;;
-                  *)
-                      echo "Warning: Unknown file type '$line', skipping..."
-                      ;;
-              esac
+              echo "Applying kernel patch: $line"
+              git apply "this-repo/patches/$line"
           done <<<"$kernel_patch"
-      - name: Setup ReSukiSU
-        run: |
-          # 使用自定義的 ReSukiSU 倉庫作為 KernelSU 源
-          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
-          # 【报错修复1】添加ReSukiSU核心配置CONFIG_KSU=y，原缺失导致集成校验失败
-          # 【报错修复2】4.4内核不支持BTF，禁用CONFIG_DEBUG_INFO_BTF，避免编译报错
-          echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KALLSYMS=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KALLSYMS_ALL=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_DEBUG_INFO=y' >>arch/arm64/configs/merged_defconfig
-          echo '# CONFIG_DEBUG_INFO_BTF is not set' >>arch/arm64/configs/merged_defconfig
-          # 【报错修复3】4.4内核无seccomp_types.h，替换为seccomp.h，解决头文件检查报错
-          sed -i 's/seccomp_types.h/seccomp.h/' drivers/kernelsu/Kbuild
-      - name: Apply KernelSU patch
-        run: |
-          # 【报错修复】空步骤加容错，避免无patch时脚本无意义执行（原步骤保留，仅加判断）
-          if [ -n "$kernelsu_patch" ]; then
-            while read -r line; do
-                if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                    continue
-                fi
-                echo "Applying KernelSU patch: $line"
-                git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
-            done <<<"$kernelsu_patch"
-          fi
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
         if: env.clang_type == 'aosp'
@@ -218,22 +149,20 @@ jobs:
           make $flags merged_defconfig
       - name: Make
         run: |
-          # 【报错修复】保留1核资源，避免GitHub服务器资源耗尽导致编译卡死（原-j参数优化，无其他改动）
-          make $flags -j$((`nproc --all`-1))
+          make $flags -j$(nproc --all)
       - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
           unzip AnyKernel3.zip
           cat >AnyKernel3-master/anykernel.sh <<EOF
-          # 【报错修复】原单引号包裹语法错误，导致AnyKernel3执行失败，移除多余单引号
-          properties() {
-          kernel.string=$kernel_repository $kernel_branch with ReSukiSU $kernelsu_remote_version for $device
+          properties() { '
+          kernel.string=$kernel_repository $kernel_branch with ReSukiSU $resukisu_remote_version for $device
           do.devicecheck=1
           do.modules=0
           do.cleanup=1
           do.cleanuponabort=1
           device.name1=$device
-          }
+          '; }
           block=auto
           is_slot_device=auto
           ramdisk_compression=auto
@@ -257,7 +186,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.kernelsu_remote_version }}
+          tag_name: ${{ env.resukisu_remote_version }}
           body: |
             Device:
             ${{ env.device }}
@@ -265,7 +194,7 @@ jobs:
             https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
             Branch:
             ${{ env.kernel_branch }}
-            ReSukiSU (Custom KernelSU):
-            https://github.com/ReSukiSU/ReSukiSU/releases/tag/${{ env.kernelsu_remote_version }}
+            ReSukiSU:
+            https://github.com/ReSukiSU/ReSukiSU/releases/tag/${{ env.resukisu_remote_version }}
           files: |
             boot.zip
