@@ -1,9 +1,9 @@
 name: Check and Build
 
 env:
-  kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm845
-  kernel_branch: fourteen
-  device: dipper
+  kernel_repository: LXJ200625/sdm660-jason
+  kernel_branch: main-15
+  device: jason
   clang_version: r487747c
   defconfig: |
     jason_defconfig
