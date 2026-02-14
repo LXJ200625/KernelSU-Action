@@ -6,9 +6,9 @@ env:
   device: dipper
   clang_version: r487747c
   defconfig: |
-    dipper_defconfig
+    jason_defconfig
   kernel_patch: |
-    backport-path-umount.patch
+    syscall_hook_patches.sh
   kernelsu_patch: |
 
 on:
