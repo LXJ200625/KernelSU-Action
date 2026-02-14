@@ -1,5 +1,4 @@
 name: Check and Build with ReSukiSU
-
 env:
   kernel_repository: LXJ200625/sdm660-jason
   kernel_branch: main-15
@@ -10,7 +9,6 @@ env:
   kernel_patch: |
     syscall_hook_patches.sh
   kernelsu_patch: |
-
 on:
   workflow_dispatch:
     inputs:
@@ -18,7 +16,6 @@ on:
         description: "Allow Rebuild"
         type: boolean
         default: false
-
 jobs:
   check_kernelsu_update:
     name: Check ReSukiSU update
@@ -27,14 +24,14 @@ jobs:
       - name: Check ReSukiSU version
         id: check_kernelsu_version
         run: |
-          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          # 【报错修复】无最新release时jq解析报错，加|| echo "v0.0.0"兜底
+          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name || echo "v0.0.0")
           remote_version=$(curl -L https://api.github.com/repos/ReSukiSU/ReSukiSU/releases/latest | jq -r .tag_name)
           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
       local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
       remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
-
   build:
     name: Build kernel
     needs: check_kernelsu_update
@@ -46,43 +43,38 @@ jobs:
       - name: Set env
         run: |
           echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
-
           if [[ "$clang_version" = "r"* ]] || [[ "$clang_version" = "latest" ]]; then
               clang_type=aosp
           else
               clang_type=vanilla
           fi
           echo clang_type=$clang_type | tee -a $GITHUB_ENV
-
           if [[ "$clang_version" = "latest" ]]; then
               clang_version=$(curl -L https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants | grep -Eo 'r[0-9]{6}[a-z]?[0-9]?')
               echo clang_version=$clang_version | tee -a $GITHUB_ENV
           fi
-
       - name: Install packages
         run: |
           sudo apt update
           sudo apt install -y \
               binutils-arm-linux-gnueabi \
-              binutils-aarch64-linux-gnu
-
+              binutils-aarch64-linux-gnu \
+              # 【报错修复】补充4.4内核编译必需依赖，原依赖不全导致隐性编译失败
+              flex bison libssl-dev bc gcc g++ git wget curl jq
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
           repository: ${{ env.kernel_repository }}
           ref: ${{ env.kernel_branch }}
           submodules: recursive
-
       - name: Checkout this repo
         uses: actions/checkout@v4
         with:
           path: this-repo
           submodules: recursive
-
       - name: Get latest kernel commit id
         run: |
           echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
-
       - name: Merge defconfig
         run: |
           while read -r line; do
@@ -92,15 +84,7 @@ jobs:
               echo "Merging defconfig: $line"
               cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
-
-      - name: Setup ReSukiSU
-        run: |
-          # 使用自定義的 ReSukiSU 倉庫作為 KernelSU 源
-          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
-
+      # 【报错修复】核心顺序调整：先打钩子补丁，再执行ReSukiSU Setup，否则检测不到钩子
       - name: Apply syscall hook patches
         run: |
           # 處理內核補丁，支持 .patch 文件和 .sh 腳本
@@ -153,17 +137,34 @@ jobs:
                       ;;
               esac
           done <<<"$kernel_patch"
-
+      - name: Setup ReSukiSU
+        run: |
+          # 使用自定義的 ReSukiSU 倉庫作為 KernelSU 源
+          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
+          # 【报错修复1】添加ReSukiSU核心配置CONFIG_KSU=y，原缺失导致集成校验失败
+          # 【报错修复2】4.4内核不支持BTF，禁用CONFIG_DEBUG_INFO_BTF，避免编译报错
+          echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KALLSYMS=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KALLSYMS_ALL=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_DEBUG_INFO=y' >>arch/arm64/configs/merged_defconfig
+          echo '# CONFIG_DEBUG_INFO_BTF is not set' >>arch/arm64/configs/merged_defconfig
+          # 【报错修复3】4.4内核无seccomp_types.h，替换为seccomp.h，解决头文件检查报错
+          sed -i 's/seccomp_types.h/seccomp.h/' drivers/kernelsu/Kbuild
       - name: Apply KernelSU patch
         run: |
-          while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Applying KernelSU patch: $line"
-              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
-          done <<<"$kernelsu_patch"
-
+          # 【报错修复】空步骤加容错，避免无patch时脚本无意义执行（原步骤保留，仅加判断）
+          if [ -n "$kernelsu_patch" ]; then
+            while read -r line; do
+                if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                    continue
+                fi
+                echo "Applying KernelSU patch: $line"
+                git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
+            done <<<"$kernelsu_patch"
+          fi
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
         if: env.clang_type == 'aosp'
@@ -171,7 +172,6 @@ jobs:
         with:
           path: aosp-clang
           key: aosp-clang-${{ env.clang_version }}
-
       - name: "AOSP-Clang: Download"
         id: aosp_clang_download
         if: env.clang_type == 'aosp' && steps.aosp_clang_restore.outputs.cache-hit != 'true'
@@ -187,7 +187,6 @@ jobs:
           )
           mkdir -p aosp-clang
           curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz | tar xz -C aosp-clang
-
       - name: "AOSP-Clang: Save"
         id: aosp_clang_save
         if: env.clang_type == 'aosp' && steps.aosp_clang_download.outcome == 'success'
@@ -195,18 +194,15 @@ jobs:
         with:
           path: aosp-clang
           key: aosp-clang-${{ env.clang_version }}
-
       - name: "AOSP-Clang: Setup"
         if: env.clang_type == 'aosp'
         run: |
           echo PATH=$(pwd)/aosp-clang/bin:$PATH | tee -a $GITHUB_ENV
-
       - name: "Vanilla-Clang: Setup"
         if: env.clang_type == 'vanilla'
         run: |
           curl -L https://apt.llvm.org/llvm.sh | sudo bash -s -- $clang_version
           echo PATH=/usr/lib/llvm-$clang_version/bin:$PATH | tee -a $GITHUB_ENV
-
       - name: export flags
         run: |
           echo flags=" \
@@ -217,55 +213,47 @@ jobs:
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           " | tee -a $GITHUB_ENV
-
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
-
       - name: Make
         run: |
-          make $flags -j$(nproc --all)
-
+          # 【报错修复】保留1核资源，避免GitHub服务器资源耗尽导致编译卡死（原-j参数优化，无其他改动）
+          make $flags -j$((`nproc --all`-1))
       - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
           unzip AnyKernel3.zip
-
           cat >AnyKernel3-master/anykernel.sh <<EOF
-          properties() { '
+          # 【报错修复】原单引号包裹语法错误，导致AnyKernel3执行失败，移除多余单引号
+          properties() {
           kernel.string=$kernel_repository $kernel_branch with ReSukiSU $kernelsu_remote_version for $device
           do.devicecheck=1
           do.modules=0
           do.cleanup=1
           do.cleanuponabort=1
           device.name1=$device
-          '; }
-
+          }
           block=auto
           is_slot_device=auto
           ramdisk_compression=auto
           patch_vbmeta_flag=auto
-
           . tools/ak3-core.sh
           split_boot
           flash_boot
           EOF
-
           cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
               cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
-
           cd AnyKernel3-master
           rm -rf .git* README.md
           zip -r ../boot.zip *
-
       - name: "Upload artifact"
         uses: actions/upload-artifact@v4
         with:
           name: boot
           path: AnyKernel3-master/*
-
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
@@ -273,13 +261,10 @@ jobs:
           body: |
             Device:
             ${{ env.device }}
-
             Kernel:
             https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
-
             Branch:
             ${{ env.kernel_branch }}
-
             ReSukiSU (Custom KernelSU):
             https://github.com/ReSukiSU/ReSukiSU/releases/tag/${{ env.kernelsu_remote_version }}
           files: |
