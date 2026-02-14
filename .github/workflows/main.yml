@@ -1,14 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: user-why-red/android_kernel_xiaomi_sdm660_419
-  kernel_branch: android-4.19-stable
-  device: wayne
-  clang_version: r416183b
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm845
+  kernel_branch: fourteen
+  device: dipper
+  clang_version: r487747c
   defconfig: |
-    vendor/wayne-oss-perf_defconfig
+    dipper_defconfig
   kernel_patch: |
-    
+    backport-path-umount.patch
   kernelsu_patch: |
 
 on:
@@ -28,8 +28,7 @@ jobs:
         id: check_kernelsu_version
         run: |
           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
-          # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
-          remote_version=v0.9.5
+          remote_version=$(curl -L https://api.github.com/repos/ReSukiSU/ReSukiSU/releases/latest | jq -r .tag_name)
           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
@@ -96,8 +95,8 @@ jobs:
 
       - name: Setup KernelSU
         run: |
-          # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+          # 使用自定義的 ReSukiSU 倉庫作為 KernelSU 源
+          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
           echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
           echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
           echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
@@ -191,7 +190,7 @@ jobs:
 
           cat >AnyKernel3-master/anykernel.sh <<EOF
           properties() { '
-          kernel.string=$kernel_repository $kernel_branch with KernelSU $kernelsu_remote_version for $device
+          kernel.string=$kernel_repository $kernel_branch with ReSukiSU $kernelsu_remote_version for $device
           do.devicecheck=1
           do.modules=0
           do.cleanup=1
@@ -209,7 +208,7 @@ jobs:
           flash_boot
           EOF
 
-          cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
               cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
@@ -238,7 +237,7 @@ jobs:
             Branch:
             ${{ env.kernel_branch }}
 
-            KernelSU:
-            https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
+            ReSukiSU (Custom KernelSU):
+            https://github.com/ReSukiSU/ReSukiSU/releases/tag/${{ env.kernelsu_remote_version }}
           files: |
             boot.zip
