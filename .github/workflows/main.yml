@@ -1,4 +1,4 @@
-name: Check and Build
+name: Check and Build with ReSukiSU
 
 env:
   kernel_repository: LXJ200625/sdm660-jason
@@ -21,10 +21,10 @@ on:
 
 jobs:
   check_kernelsu_update:
-    name: Check KernelSU update
+    name: Check ReSukiSU update
     runs-on: ubuntu-latest
     steps:
-      - name: Check KernelSU version
+      - name: Check ReSukiSU version
         id: check_kernelsu_version
         run: |
           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
@@ -93,7 +93,7 @@ jobs:
               cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
 
-      - name: Setup KernelSU
+      - name: Setup ReSukiSU
         run: |
           # 使用自定義的 ReSukiSU 倉庫作為 KernelSU 源
           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s -- $kernelsu_remote_version
@@ -101,14 +101,57 @@ jobs:
           echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
           echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
-      - name: Apply kernel patch
+      - name: Apply syscall hook patches
         run: |
+          # 處理內核補丁，支持 .patch 文件和 .sh 腳本
           while read -r line; do
               if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
                   continue
               fi
-              echo "Applying kernel patch: $line"
-              git apply "this-repo/patches/$line"
+              
+              # 獲取文件擴展名
+              extension="${line##*.}"
+              
+              case "$extension" in
+                  "patch")
+                      echo "Applying kernel patch: $line"
+                      if [ ! -f "this-repo/patches/$line" ]; then
+                          echo "Warning: Patch file 'this-repo/patches/$line' not found, skipping..."
+                          continue
+                      fi
+                      
+                      # 檢查補丁文件是否為空
+                      if [ ! -s "this-repo/patches/$line" ]; then
+                          echo "Warning: Patch file 'this-repo/patches/$line' is empty, skipping..."
+                          continue
+                      fi
+                      
+                      git apply "this-repo/patches/$line" || {
+                          echo "Error: Failed to apply patch '$line'"
+                          exit 1
+                      }
+                      ;;
+                  "sh")
+                      echo "Executing patch script: $line"
+                      if [ ! -f "this-repo/patches/$line" ]; then
+                          echo "Warning: Script file 'this-repo/patches/$line' not found, skipping..."
+                          continue
+                      fi
+                      
+                      # 確保腳本可執行
+                      chmod +x "this-repo/patches/$line"
+                      
+                      # 執行腳本，傳入內核源碼根目錄作為參數
+                      echo "Running $line with kernel source path: $(pwd)"
+                      bash "this-repo/patches/$line" "$(pwd)" || {
+                          echo "Error: Failed to execute script '$line'"
+                          exit 1
+                      }
+                      ;;
+                  *)
+                      echo "Warning: Unknown file type '$line', skipping..."
+                      ;;
+              esac
           done <<<"$kernel_patch"
 
       - name: Apply KernelSU patch
