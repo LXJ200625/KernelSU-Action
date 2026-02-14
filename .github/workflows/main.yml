@@ -6,7 +6,6 @@ env:
   clang_version: r487747c
   defconfig: |
     jason_defconfig
-  # 完全删除自定义syscall hook补丁，使用官方自动集成
   kernel_patch: |
 on:
   workflow_dispatch:
@@ -15,6 +14,7 @@ on:
         description: "Allow Rebuild"
         type: boolean
         default: false
+
 jobs:
   check_resukisu_update:
     name: Check ReSukiSU update
@@ -99,11 +99,8 @@ jobs:
 
       - name: Setup ReSukiSU (Official 4.4 Auto-Integration)
         run: |
-          # 使用ReSukiSU官方4.4内核专用自动集成脚本，自动处理所有钩子
           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup-old-kernels.sh" | bash -s -- $resukisu_remote_version
-          # 修复4.4内核seccomp头文件检查问题
           sed -i 's/seccomp_types.h/seccomp.h/' drivers/kernelsu/Kbuild
-          # 添加必需的内核配置
           cat >> arch/arm64/configs/merged_defconfig <<EOF
 CONFIG_KSU=y
 CONFIG_KPROBES=y
@@ -112,7 +109,7 @@ CONFIG_KPROBE_EVENTS=y
 CONFIG_KALLSYMS=y
 CONFIG_KALLSYMS_ALL=y
 CONFIG_DEBUG_INFO=y
-# CONFIG_DEBUG_INFO_BTF is not set # 4.4内核不支持BTF，禁用
+# CONFIG_DEBUG_INFO_BTF is not set
 EOF
 
       - name: Restore AOSP-Clang from cache
