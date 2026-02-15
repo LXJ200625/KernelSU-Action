@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: kyasu/android_kernel_xiaomi_sdm710
-  kernel_branch: lineage-23.0
-  device: sirius
+  kernel_repository: LineageOS/android_kernel_xiaomi_sm6150
+  kernel_branch: lineage-23.2
+  device: violet
   clang_version: r416183b
   defconfig: |
-    sirius_defconfig
+    vendor/sdmsteppe-perf_defconfig
+    vendor/violet.config
   kernel_patch: |
     
   kernelsu_patch: |
