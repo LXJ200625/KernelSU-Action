@@ -6,7 +6,7 @@ env:
   device: violet
   clang_version: r416183b
   defconfig: |
-    vendor/violet-perf_defconfig
+    vendor/violet-oos_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
