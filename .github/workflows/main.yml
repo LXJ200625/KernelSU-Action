@@ -1,10 +1,10 @@
 name: Check and Build
 
 env:
-  kernel_repository: MiCode/Xiaomi_Kernel_OpenSource
-  kernel_branch: violet-q-oss
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_violet
+  kernel_branch: thirteen
   device: violet
-  clang_version: r365631c
+  clang_version: r416183b
   defconfig: |
     vendor/violet-perf_defconfig
   kernel_patch: |
