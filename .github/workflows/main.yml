@@ -4,7 +4,7 @@ env:
   kernel_repository: crdroidandroid/android_kernel_xiaomi_sm6150
   kernel_branch: 13.0-20240223
   device: violet
-  clang_version: r416183b
+  clang_version: r487747c
   defconfig: |
     violet_defconfig
   kernel_patch: |
