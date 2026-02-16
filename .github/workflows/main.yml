@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: crdroidandroid/android_kernel_xiaomi_sm6150
-  kernel_branch: 13.0-20240223
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_violet
+  kernel_branch: thirteen
   device: violet
   clang_version: r487747c
   defconfig: |
-    violet_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
