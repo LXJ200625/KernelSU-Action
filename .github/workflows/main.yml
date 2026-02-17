@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: pix106/android_kernel_xiaomi_southwest-4.19
-  kernel_branch: main-3.18.2
+  kernel_repository: 1582130940/android_kernel_xiaomi_sdm660
+  kernel_branch: lineage-20
   device: clover
   clang_version: r450784e
   defconfig: |
