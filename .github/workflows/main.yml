@@ -3,10 +3,10 @@ name: Check and Build
 env:
   kernel_repository: LXJ200625/4.19_kernel_xiaomi_sdm660_southwest-ng
   kernel_branch: 0.11.0
-  device: clover
+  device: wayne
   clang_version: r416183b
   defconfig: |
-    vendor/xiaomi/clover.config
+    vendor/xiaomi/wayne.config
     vendor/xiaomi/sdm660_defconfig
   kernel_patch: |
   
