@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: AlcatrazDev-Android-Devices/kernel_xiaomi_clover
-  kernel_branch: lineage-23.1-20260204
-  device: wayne
+  kernel_repository: LXJ200625/4.19_kernel_xiaomi_sdm660_southwest-ng
+  kernel_branch: main
+  device: clover
   clang_version: r416183b
   defconfig: |
-    vendor/xiaomi/wayne.config
+    vendor/xiaomi/clover.config
     vendor/xiaomi/sdm660_defconfig
   kernel_patch: |
   
