@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: user-why-red/android_kernel_xiaomi_sdm660_419
-  kernel_branch: android-4.19-stable
-  device: wayne
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_clover
+  kernel_branch: fourteen
+  device: clover
   clang_version: r416183b
   defconfig: |
-    vendor/wayne-oss-perf_defconfig
+    clover_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
