@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: PixelExperience-Devices/kernel_xiaomi_clover
-  kernel_branch: fourteen
+  kernel_branch: fourteen-plus
   device: clover
   clang_version: r416183b
   defconfig: |
