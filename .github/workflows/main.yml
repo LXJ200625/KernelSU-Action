@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: iamehsangh/android_kernel_xiaomi_jason
-  kernel_branch: eas-los-bpf-test
-  device: jason
+  kernel_repository: SDM710-Development/android_kernel_xiaomi_sdm710
+  kernel_branch: 10.0-caf
+  device: sirius
   clang_version: r416183b
   defconfig: |
-    jason_defconfig
+    sirius_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
