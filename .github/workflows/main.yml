@@ -3,7 +3,7 @@ env:
   kernel_repository: LXJ200625/kernel_xiaomi_sirius
   kernel_branch: thirteen
   device: sirius
-  clang_version: r365631c
+  clang_version: r383902
   defconfig: |
     sirius_defconfig
   kernel_patch: |
