@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/4.19_kernel_xiaomi_sdm660_southwest-ng
-  kernel_branch: main-dynamic
-  device: clover
+  kernel_repository: LXJ200625/scarlet_wayne
+  kernel_branch: sched-test
+  device: wayne
   clang_version: r487747c
   defconfig: |
-    vendor/xiaomi/clover.config
-    vendor/xiaomi/sdm660_defconfig
+    wayne-oos_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
@@ -99,9 +98,9 @@ jobs:
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+         # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
