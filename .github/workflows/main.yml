@@ -1,7 +1,7 @@
 name: Check and Build
 
 env:
-  kernel_repository: PocoF1-Resources/android_kernel_xiaomi_sdm845
+  kernel_repository: LXJ200625/bpf_kernel_xiaomi_sdm845
   kernel_branch: 16.0-bpf
   device: dipper
   clang_version: r487747c
