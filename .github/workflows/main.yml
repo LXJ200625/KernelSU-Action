@@ -6,7 +6,7 @@ env:
   device: wayne
   clang_version: r487747c
   defconfig: |
-    vendor/wayne-oos_defconfig
+    vendor/wayne-oss_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
