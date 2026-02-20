@@ -1,4 +1,5 @@
 name: Check and Build
+
 env:
   kernel_repository: LXJ200625/kernel_xiaomi_sirius
   kernel_branch: thirteen
@@ -9,6 +10,7 @@ env:
   kernel_patch: |
     
   kernelsu_patch: |
+
 on:
   workflow_dispatch:
     inputs:
@@ -16,22 +18,25 @@ on:
         description: "Allow Rebuild"
         type: boolean
         default: false
+
 jobs:
   check_kernelsu_update:
     name: Check KernelSU update
     runs-on: ubuntu-latest
     steps:
+
       - name: Check KernelSU version
         id: check_kernelsu_version
         run: |
           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
           # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
-         # remote_version=v0.9.5
+          remote_version=v0.9.5
           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
     outputs:
       local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
       remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
+
   build:
     name: Build kernel
     needs: check_kernelsu_update
@@ -53,6 +58,7 @@ jobs:
               clang_version=$(curl -L https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants | grep -Eo 'r[0-9]{6}[a-z]?[0-9]?')
               echo clang_version=$clang_version | tee -a $GITHUB_ENV
           fi
+
       - name: Install packages
         run: |
           sudo apt update
@@ -63,20 +69,24 @@ jobs:
               gcc-arm-linux-gnueabi \
               g++-aarch64-linux-gnu \
               g++-arm-linux-gnueabi
+
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
           repository: ${{ env.kernel_repository }}
           ref: ${{ env.kernel_branch }}
           submodules: recursive
+
       - name: Checkout this repo
         uses: actions/checkout@v4
         with:
           path: this-repo
           submodules: recursive
+
       - name: Get latest kernel commit id
         run: |
           echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
+
       - name: Merge defconfig
         run: |
           while read -r line; do
@@ -86,6 +96,7 @@ jobs:
               echo "Merging defconfig: $line"
               cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
+
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
@@ -93,6 +104,7 @@ jobs:
          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+
       - name: Apply kernel patch
         run: |
           while read -r line; do
@@ -102,6 +114,7 @@ jobs:
               echo "Applying kernel patch: $line"
               git apply "this-repo/patches/$line"
           done <<<"$kernel_patch"
+
       - name: Apply KernelSU patch
         run: |
           while read -r line; do
@@ -111,6 +124,7 @@ jobs:
               echo "Applying KernelSU patch: $line"
               git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
           done <<<"$kernelsu_patch"
+
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
         if: env.clang_type == 'aosp'
@@ -118,6 +132,7 @@ jobs:
         with:
           path: aosp-clang
           key: aosp-clang-${{ env.clang_version }}
+
       - name: "AOSP-Clang: Download"
         id: aosp_clang_download
         if: env.clang_type == 'aosp' && steps.aosp_clang_restore.outputs.cache-hit != 'true'
@@ -133,6 +148,7 @@ jobs:
           )
           mkdir -p aosp-clang
           curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz | tar xz -C aosp-clang
+
       - name: "AOSP-Clang: Save"
         id: aosp_clang_save
         if: env.clang_type == 'aosp' && steps.aosp_clang_download.outcome == 'success'
@@ -140,10 +156,12 @@ jobs:
         with:
           path: aosp-clang
           key: aosp-clang-${{ env.clang_version }}
+
       - name: "AOSP-Clang: Setup"
         if: env.clang_type == 'aosp'
         run: |
           echo PATH=$(pwd)/aosp-clang/bin:$PATH | tee -a $GITHUB_ENV
+
       - name: "Vanilla-Clang: Setup"
         if: env.clang_type == 'vanilla'
         run: |
@@ -159,12 +177,15 @@ jobs:
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           " | tee -a $GITHUB_ENV
+
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
+
       - name: Make
         run: |
           make $flags KCFLAGS="-Wno-error" -j$(nproc --all)
+
       - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
@@ -193,11 +214,13 @@ jobs:
           cd AnyKernel3-master
           rm -rf .git* README.md
           zip -r ../boot.zip *
+
       - name: "Upload artifact"
         uses: actions/upload-artifact@v4
         with:
           name: boot
           path: AnyKernel3-master/*
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
