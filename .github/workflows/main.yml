@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_dipper_2026
-  kernel_branch: main
+  kernel_repository: PocoF1-Resources/android_kernel_xiaomi_sdm845
+  kernel_branch: 16.0-bpf
   device: dipper
   clang_version: r487747c
   defconfig: |
-    vendor/xiaomi/dipper_defconfig
+    vendor/xiaomi/sdm845_defconfig
+    vendor/xiaomi/dipper.config
   kernel_patch: |
     backport-path-umount.patch
   kernelsu_patch: |
