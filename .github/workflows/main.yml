@@ -1,13 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/bpf_kernel_xiaomi_sdm845
-  kernel_branch: 16.0-bpf
-  device: dipper
+  kernel_repository: LineageOS/android_kernel_xiaomi_sdm710
+  kernel_branch: lineage-20
+  device: sirius
   clang_version: r487747c
   defconfig: |
-    vendor/xiaomi/mi845_defconfig
-    vendor/xiaomi/dipper.config
+    sdm670_defconfig
+    xiaomi/sirius.config
+    xiaomi/sdm710-common.config
   kernel_patch: |
     backport-path-umount.patch
   kernelsu_patch: |
