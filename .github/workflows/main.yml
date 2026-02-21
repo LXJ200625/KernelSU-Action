@@ -1,5 +1,4 @@
 name: Check and Build
-
 env:
   kernel_repository: LXJ200625/android_kernel_xiaomi_violet
   kernel_branch: 13.0-20260215
@@ -24,15 +23,14 @@ jobs:
     name: Check KernelSU update
     runs-on: ubuntu-latest
     steps:
-
       - name: Check KernelSU version
         id: check_kernelsu_version
         run: |
           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
           # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
-         # remote_version=v0.9.5
-          echo local_version=$local_version | tee -a $GITHUB_OUTPUT
-          echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
+          remote_version=v0.9.5
+          echo "local_version=$local_version" >> $GITHUB_OUTPUT
+          echo "remote_version=$remote_version" >> $GITHUB_OUTPUT
     outputs:
       local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
       remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
@@ -47,16 +45,15 @@ jobs:
     steps:
       - name: Set env
         run: |
-          echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
-          if [[ "$clang_version" = "r"* ]] || [[ "$clang_version" = "latest" ]]; then
-              clang_type=aosp
+          echo "kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }}" >> $GITHUB_ENV
+          if [[ "${{ env.clang_version }}" = "r"* ]] || [[ "${{ env.clang_version }}" = "latest" ]]; then
+              echo "clang_type=aosp" >> $GITHUB_ENV
           else
-              clang_type=vanilla
+              echo "clang_type=vanilla" >> $GITHUB_ENV
           fi
-          echo clang_type=$clang_type | tee -a $GITHUB_ENV
-          if [[ "$clang_version" = "latest" ]]; then
+          if [[ "${{ env.clang_version }}" = "latest" ]]; then
               clang_version=$(curl -L https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants | grep -Eo 'r[0-9]{6}[a-z]?[0-9]?')
-              echo clang_version=$clang_version | tee -a $GITHUB_ENV
+              echo "clang_version=$clang_version" >> $GITHUB_ENV
           fi
 
       - name: Install packages
@@ -64,7 +61,9 @@ jobs:
           sudo apt update
           sudo apt install -y \
               binutils-arm-linux-gnueabi \
-              binutils-aarch64-linux-gnu
+              binutils-aarch64-linux-gnu \
+              jq \
+              zip
 
       - name: Checkout kernel source
         uses: actions/checkout@v4
@@ -81,7 +80,7 @@ jobs:
 
       - name: Get latest kernel commit id
         run: |
-          echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
+          echo "kernel_commit_id=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Merge defconfig
         run: |
@@ -90,16 +89,16 @@ jobs:
                   continue
               fi
               echo "Merging defconfig: $line"
-              cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
-          done <<<"$defconfig"
+              cat arch/arm64/configs/$line >> arch/arm64/configs/merged_defconfig
+          done <<< "${{ env.defconfig }}"
 
       - name: Setup KernelSU
         run: |
           rm -rf KernelSU
           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
-         # echo 'CONFIG_HAVE_KPROBES' >>arch/arm64/configs/merged_defconfig
-         # echo 'CONFIG_KPROBES' >>arch/arm64/configs/merged_defconfig
-         # echo 'CONFIG_KPROBE_EVENTS' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBES=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >> arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
@@ -109,7 +108,7 @@ jobs:
               fi
               echo "Applying kernel patch: $line"
               git apply "this-repo/patches/$line"
-          done <<<"$kernel_patch"
+          done <<< "${{ env.kernel_patch }}"
 
       - name: Apply KernelSU patch
         run: |
@@ -119,7 +118,7 @@ jobs:
               fi
               echo "Applying KernelSU patch: $line"
               git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
-          done <<<"$kernelsu_patch"
+          done <<< "${{ env.kernelsu_patch }}"
 
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
@@ -134,8 +133,8 @@ jobs:
         if: env.clang_type == 'aosp' && steps.aosp_clang_restore.outputs.cache-hit != 'true'
         run: |
           aosp_clang_branch=$(
-              case "$clang_version" in
-              r365631c ) echo android11-release;;
+              case "${{ env.clang_version }}" in
+              r365631c ) echo android11-release ;;
               r383902 | r416183b) echo master-kernel-build-2021 ;;
               r450784e) echo master-kernel-build-2022 ;;
               r487747c) echo main-kernel-build-2023 ;;
@@ -143,11 +142,11 @@ jobs:
               esac
           )
           mkdir -p aosp-clang
-          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz | tar xz -C aosp-clang
+          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-${{ env.clang_version }}.tar.gz | tar xz -C aosp-clang
 
       - name: "AOSP-Clang: Save"
         id: aosp_clang_save
-        if: env.clang_type == 'aosp' && steps.aosp_clang_download.outcome == 'success'
+        if: env.clang_type == 'aosp' && steps.aosp_clang_download.conclusion == 'success'
         uses: actions/cache/save@v4
         with:
           path: aosp-clang
@@ -156,46 +155,46 @@ jobs:
       - name: "AOSP-Clang: Setup"
         if: env.clang_type == 'aosp'
         run: |
-          echo PATH=$(pwd)/aosp-clang/bin:$PATH | tee -a $GITHUB_ENV
+          echo "PATH=$(pwd)/aosp-clang/bin:$PATH" >> $GITHUB_ENV
 
       - name: "Vanilla-Clang: Setup"
         if: env.clang_type == 'vanilla'
         run: |
           curl -L https://apt.llvm.org/llvm.sh | sudo bash -s -- ${{ env.clang_version }}
-          echo PATH=/usr/lib/llvm-${{ env.clang_version }}/bin:$PATH | tee -a $GITHUB_ENV
+          echo "PATH=/usr/lib/llvm-${{ env.clang_version }}/bin:$PATH" >> $GITHUB_ENV
 
       - name: export flags
         run: |
-          echo flags=" \
+          echo 'flags=" \
           O=out \
           ARCH=arm64 \
           LLVM=1 \
           LLVM_IAS=1 \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-          " | tee -a $GITHUB_ENV
+          "' >> $GITHUB_ENV
 
       - name: Make defconfig
         run: |
-          make $flags merged_defconfig
+          make ${{ env.flags }} merged_defconfig
 
       - name: Make
         run: |
-          make $flags Image.gz-dtb -j$(nproc --all)
+          make ${{ env.flags }} Image.gz-dtb -j$(nproc --all)
 
       - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
           unzip AnyKernel3.zip
-          cat >AnyKernel3-master/anykernel.sh <<EOF
-          properties() { '
-          kernel.string=$kernel_repository $kernel_branch with KernelSU $kernelsu_remote_version for $device
-          do.devicecheck=1
-          do.modules=0
-          do.cleanup=1
-          do.cleanuponabort=1
-          device.name1=$device
-          '; }
+          cat > AnyKernel3-master/anykernel.sh <<EOF
+          properties() {
+              kernel.string=${{ env.kernel_repository }} ${{ env.kernel_branch }} with KernelSU ${{ env.kernelsu_remote_version }} for ${{ env.device }}
+              do.devicecheck=1
+              do.modules=0
+              do.cleanup=1
+              do.cleanuponabort=1
+              device.name1=${{ env.device }}
+          }
           block=auto
           is_slot_device=auto
           ramdisk_compression=auto
