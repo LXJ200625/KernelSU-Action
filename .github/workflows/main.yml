@@ -4,7 +4,7 @@ env:
   kernel_repository: LineageOS/android_kernel_xiaomi_sdm710
   kernel_branch: lineage-20
   device: sirius
-  clang_version: r487747c
+  clang_version: r416183b
   defconfig: |
     sdm670_defconfig
     xiaomi/sirius.config
