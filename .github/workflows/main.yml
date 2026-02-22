@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/android11_kernel_xiaomi_jason
-  kernel_branch: test1
-  device: jason
+  kernel_repository: nazunamoe-device/android_kernel_xiaomi_sdm660
+  kernel_branch: new_90hz
+  device: clover
   clang_version: r365631c
   defconfig: |
-    jason_defconfig
+    clover_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
