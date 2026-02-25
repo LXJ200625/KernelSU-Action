@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: LXJ200625/bpf_kernel_xiaomi_clover
-  kernel_branch: 15.0
+  kernel_branch: bpf-clover
   device: clover
   clang_version: r383902
   defconfig: |
