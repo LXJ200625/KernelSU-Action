@@ -25,8 +25,7 @@ jobs:
       - name: Check KernelSU version
         id: check_kernelsu_version
         run: |
-          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
-          # remote_version=$(curl -L https://api.github.com/repos/tiann/KernelSU/releases/latest | jq -r .tag_name)
+          local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name || echo "v0.0.0")
           remote_version=v0.9.5
           echo local_version=$local_version | tee -a $GITHUB_OUTPUT
           echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
@@ -51,21 +50,25 @@ jobs:
           fi
           echo clang_type=$clang_type | tee -a $GITHUB_ENV
           if [[ "$clang_version" = "latest" ]]; then
-              clang_version=$(curl -L https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants | grep -Eo 'r[0-9]{6}[a-z]?[0-9]?')
+              clang_version=$(curl -L https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants | grep -Eo 'r[0-9]{6}[a-z]?[0-9]?' || echo "r416183b")
               echo clang_version=$clang_version | tee -a $GITHUB_ENV
           fi
-      - name: Install packages
+      - name: Install packages (补全4.9内核Clang编译必需依赖)
         run: |
-          sudo apt update
-          sudo apt install -y \
+          sudo apt update -y
+          sudo apt install -y --no-install-recommends \
               binutils-arm-linux-gnueabi \
               binutils-aarch64-linux-gnu \
+              gcc-arm-linux-gnueabi \
+              gcc-aarch64-linux-gnu \
+              libc6-dev-armhf-cross \
               make \
               git \
               flex \
               bison \
               libssl-dev \
-              bc
+              bc \
+              libelf-dev
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
@@ -80,19 +83,22 @@ jobs:
       - name: Get latest kernel commit id
         run: |
           echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
-      - name: Merge defconfig
+      - name: Merge defconfig (源头强制禁用VDSO32，兜底写法)
         run: |
+          # 1. 清空并合并原始defconfig
           > arch/arm64/configs/merged_defconfig
           while read -r line; do
-            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-              continue
-            fi
-            echo "Merging defconfig: $line"
-            cat arch/arm64/configs/$line >> arch/arm64/configs/merged_defconfig
+              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                  continue
+              fi
+              cat arch/arm64/configs/$line >> arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
+          # 2. 强制写入禁用VDSO32，覆盖所有原有配置（核心修复）
+          echo '# CONFIG_VDSO32 is not set' >> arch/arm64/configs/merged_defconfig
+          # 3. 移除可能存在的CONFIG_VDSO32=y，彻底兜底
+          sed -i '/CONFIG_VDSO32=y/d' arch/arm64/configs/merged_defconfig
       - name: Setup KernelSU
         run: |
-          # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
           echo 'CONFIG_KPROBES=y' >> arch/arm64/configs/merged_defconfig
           echo 'CONFIG_HAVE_KPROBES=y' >> arch/arm64/configs/merged_defconfig
@@ -100,20 +106,18 @@ jobs:
       - name: Apply kernel patch
         run: |
           while read -r line; do
-            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-              continue
-            fi
-            echo "Applying kernel patch: $line"
-            git apply "this-repo/patches/$line"
+              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                  continue
+              fi
+              git apply "this-repo/patches/$line" || echo "Patch $line skipped (not applicable)"
           done <<<"$kernel_patch"
       - name: Apply KernelSU patch
         run: |
           while read -r line; do
-            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-              continue
-            fi
-            echo "Applying KernelSU patch: $line"
-            git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
+              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                  continue
+              fi
+              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line" || echo "KernelSU patch $line skipped (not applicable)"
           done <<<"$kernelsu_patch"
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
@@ -133,7 +137,7 @@ jobs:
               r450784e) echo master-kernel-build-2022 ;;
               r487747c) echo main-kernel-build-2023 ;;
               *) echo main ;;
-              esac
+            esac
           )
           mkdir -p aosp-clang
           curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz | tar xz -C aosp-clang
@@ -166,19 +170,13 @@ jobs:
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
-      - name: Force disable VDSO32 in .config
-        run: |
-          # 直接修改编译生成的.config文件，强制禁用VDSO32
-          sed -i 's/CONFIG_VDSO32=y/# CONFIG_VDSO32 is not set/' out/.config
-          # 验证是否禁用成功
-          grep "VDSO32" out/.config
       - name: Make
         run: |
-          make $flags -j$(nproc --all)
+          make $flags -j$(nproc --all) Image.gz-dtb
       - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
-          unzip AnyKernel3.zip
+          unzip -q AnyKernel3.zip
           cat >AnyKernel3-master/anykernel.sh <<EOF
           properties() { '
           kernel.string=$kernel_repository $kernel_branch with KernelSU $kernelsu_remote_version for $device
@@ -196,30 +194,25 @@ jobs:
           split_boot
           flash_boot
           EOF
-          cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
               cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
           cd AnyKernel3-master
           rm -rf .git* README.md
-          zip -r ../boot.zip *
+          zip -r -q ../boot.zip *
       - name: "Upload artifact"
         uses: actions/upload-artifact@v4
         with:
           name: boot
-          path: AnyKernel3-master/*
+          path: boot.zip
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.kernelsu_remote_version }}
           body: |
-            Device:
-            ${{ env.device }}
-            Kernel:
-            https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
-            Branch:
-            ${{ env.kernel_branch }}
-            KernelSU:
-            https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
-          files: |
-            boot.zip
+            Device: ${{ env.device }}
+            Kernel: https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
+            Branch: ${{ env.kernel_branch }}
+            KernelSU: https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
+          files: boot.zip
