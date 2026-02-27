@@ -189,6 +189,17 @@ jobs:
             rm -rf fs/sdfat
          fi
 
+      - name: 修复 iov_iter_revert 未定义错误
+        run: |
+         FILE_PATH="net/tls/tls_sw.c"
+         if [ -f "$FILE_PATH" ]; then
+            echo "正在修复 $FILE_PATH ..."
+            sed -i '1i #include <linux/iov_iter.h>' "$FILE_PATH"
+            echo "修复完成。"
+         else
+         echo "警告：未找到 $FILE_PATH，请检查源码路径。"
+         fi
+
       - name: Make
         run: |
           make $flags -j$(nproc --all)
