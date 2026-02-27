@@ -60,7 +60,6 @@ jobs:
           sudo apt install -y \
               binutils-arm-linux-gnueabi \
               binutils-aarch64-linux-gnu
-          sudo ln -sf /usr/bin/arm-linux-gnueabi-ld /usr/bin/armelf_linux_eabi-ld
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
@@ -162,7 +161,7 @@ jobs:
           make $flags merged_defconfig
       - name: Make
         run: |
-          make $flags -j$(nproc --all)
+          make $flags -j$(nproc --all) LD=arm-linux-gnueabi-ld CROSS_COMPILE_ARM32=arm-linux-gnueabi-
       - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
