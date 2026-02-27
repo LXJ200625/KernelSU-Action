@@ -84,36 +84,36 @@ jobs:
         run: |
           > arch/arm64/configs/merged_defconfig
           while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Merging defconfig: $line"
-              cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            echo "Merging defconfig: $line"
+            cat arch/arm64/configs/$line >> arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBES=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >> arch/arm64/configs/merged_defconfig
       - name: Apply kernel patch
         run: |
           while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Applying kernel patch: $line"
-              git apply "this-repo/patches/$line"
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            echo "Applying kernel patch: $line"
+            git apply "this-repo/patches/$line"
           done <<<"$kernel_patch"
       - name: Apply KernelSU patch
         run: |
           while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Applying KernelSU patch: $line"
-              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            echo "Applying KernelSU patch: $line"
+            git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
           done <<<"$kernelsu_patch"
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
@@ -166,12 +166,12 @@ jobs:
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
-      - name: Remove vdso32 from build
+      - name: Force disable VDSO32 in .config
         run: |
-          # 1. 从 Kbuild 文件中移除 vdso32，让构建系统忽略它
-          sed -i '/obj-$(CONFIG_VDSO32)/d' arch/arm64/kernel/Kbuild
-          # 2. 从主 Makefile 中移除 vdso_prepare 依赖
-          sed -i '/vdso_prepare/d' arch/arm64/Makefile
+          # 直接修改编译生成的.config文件，强制禁用VDSO32
+          sed -i 's/CONFIG_VDSO32=y/# CONFIG_VDSO32 is not set/' out/.config
+          # 验证是否禁用成功
+          grep "VDSO32" out/.config
       - name: Make
         run: |
           make $flags -j$(nproc --all)
