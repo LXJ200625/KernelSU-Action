@@ -1,14 +1,15 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/bpf_kernel_xiaomi_clover
-  kernel_branch: bpf-clover
-  device: clover
-  clang_version: r383902
+  kernel_repository: Evolution-X-Devices/kernel_xiaomi_sdm845
+  kernel_branch: bka
+  device: dipper
+  clang_version: r416183b
   defconfig: |
-    clover_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/xiaomi/mi845_defconfig
   kernel_patch: |
-    # backport-path-umount.patch
+    backport-path-umount.patch
   kernelsu_patch: |
 
 on:
