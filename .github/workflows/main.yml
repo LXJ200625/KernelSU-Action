@@ -36,7 +36,7 @@ jobs:
   build:
     name: Build kernel
     needs: check_kernelsu_update
-    if: inputs.allow_rebuild || needs.check_kernelsu_update.outputs.local_version != needs.check_kernelsu_update.outputs.local_version
+    if: inputs.allow_rebuild || needs.check_kernelsu_update.outputs.local_version != needs.check_kernelsu_update.outputs.remote_version
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -82,14 +82,12 @@ jobs:
           echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
       - name: Merge defconfig
         run: |
-          > arch/arm64/configs/merged_defconfig
           while read -r line; do
-            if [; do
-            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-              continue
-            fi
-            echo "Merging defconfig: $line"
-            cat arch/arm64/configs/$line >> arch/arm64/configs/merged_defconfig
+              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                  continue
+              fi
+              echo "Merging defconfig: $line"
+              cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
       - name: Disable 32-bit VDSO to bypass linker error
         run: |
@@ -99,26 +97,26 @@ jobs:
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >> arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >> arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >> arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
       - name: Apply kernel patch
         run: |
           while read -r line; do
-            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-              continue
-            fi
-            echo "Applying kernel patch: $line"
-            git apply "this-repo/patches/$line"
+              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                  continue
+              fi
+              echo "Applying kernel patch: $line"
+              git apply "this-repo/patches/$line"
           done <<<"$kernel_patch"
       - name: Apply KernelSU patch
         run: |
           while read -r line; do
-            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-              continue
-            fi
-            echo "Applying KernelSU patch: $line"
-            git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
+              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+                  continue
+              fi
+              echo "Applying KernelSU patch: $line"
+              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
           done <<<"$kernelsu_patch"
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
@@ -132,13 +130,13 @@ jobs:
         if: env.clang_type == 'aosp' && steps.aosp_clang_restore.outputs.cache-hit != 'true'
         run: |
           aosp_clang_branch=$(
-            case "$clang_version" in
+              case "$clang_version" in
               r365631c ) echo android11-release;;
               r383902 | r416183b) echo master-kernel-build-2021 ;;
               r450784e) echo master-kernel-build-2022 ;;
               r487747c) echo main-kernel-build-2023 ;;
               *) echo main ;;
-            esac
+              esac
           )
           mkdir -p aosp-clang
           curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz | tar xz -C aosp-clang
@@ -197,7 +195,7 @@ jobs:
           EOF
           cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
-            cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
+              cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
           cd AnyKernel3-master
           rm -rf .git* README.md
