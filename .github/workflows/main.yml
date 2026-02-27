@@ -6,7 +6,7 @@ env:
   clang_version: r416183b
   defconfig: |
     vendor/xiaomi/dipper.config
-    vendor/xiaomi/mi845_defconfig
+    vendor/xiaomi/mijia-mix2s_defconfig
   kernel_patch: |
     backport-path-umount.patch
   kernelsu_patch: |
@@ -27,8 +27,8 @@ jobs:
         run: |
           local_version=$(curl -L --header 'authorization: Bearer ${{ github.token }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name || echo "v0.0.0")
           remote_version=v0.9.5
-          echo local_version=$local_version | tee -a $GITHUB_OUTPUT
-          echo remote_version=$remote_version | tee -a $GITHUB_OUTPUT
+          echo local_version=$local_version
+          echo remote_version=$remote_version
     outputs:
       local_version: ${{ steps.check_kernelsu_version.outputs.local_version }}
       remote_version: ${{ steps.check_kernelsu_version.outputs.remote_version }}
@@ -42,21 +42,14 @@ jobs:
     steps:
       - name: Set env
         run: |
-          echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} | tee -a $GITHUB_ENV
-          if [[ "$clang_version" = "r"* ]] || [[ "$clang_version" = "latest" ]]; then
-              clang_type=aosp
+          echo kernelsu_remote_version=${{ needs.check_kernelsu_update.outputs.remote_version }} >> $GITHUB_ENV
+          if [[ "$clang_version" = r* || "$clang_version" = "latest" ]]; then
+              echo clang_type=aosp >> $GITHUB_ENV
           else
-              clang_type=vanilla
+              echo clang_type=vanilla >> $GITHUB_ENV
           fi
-          echo clang_type=$clang_type | tee -a $GITHUB_ENV
-          if [[ "$clang_version" = "latest" ]]; then
-              clang_version=$(curl -L https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants | grep -Eo 'r[0-9]{6}[a-z]?[0-9]?' || echo "r416183b")
-              echo clang_version=$clang_version | tee -a $GITHUB_ENV
-          fi
-
-      - name: Install dependencies and replace system linker (核心修复，已验证)
+      - name: Install dependencies
         run: |
-          # 1. 安装所有必需的交叉编译工具链
           sudo apt update -y
           sudo apt install -y --no-install-recommends \
               binutils-arm-linux-gnueabi \
@@ -64,41 +57,19 @@ jobs:
               gcc-arm-linux-gnueabi \
               gcc-aarch64-linux-gnu \
               libc6-dev-armhf-cross \
-              make \
-              git \
-              flex \
-              bison \
-              libssl-dev \
-              bc \
-              libelf-dev
-          
-          # 2. 验证ARM32链接器是否存在
-          ls -la /usr/bin/arm-linux-gnueabi-ld
-          
-          # 3. 终极修复：将系统默认链接器替换为ARM32链接器
-          sudo mv /usr/bin/ld /usr/bin/ld.x86_64
-          sudo ln -sf /usr/bin/arm-linux-gnueabi-ld /usr/bin/ld
-          
-          # 4. 验证链接器是否替换成功
-          ld --version
-
+              make git flex bison libssl-dev bc libelf-dev
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
           repository: ${{ env.kernel_repository }}
           ref: ${{ env.kernel_branch }}
           submodules: recursive
-
       - name: Checkout this repo
         uses: actions/checkout@v4
         with:
           path: this-repo
-          submodules: recursive
-
       - name: Get latest kernel commit id
-        run: |
-          echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
-
+        run: echo kernel_commit_id=$(git rev-parse HEAD) >> $GITHUB_ENV
       - name: Merge defconfig
         run: |
           > arch/arm64/configs/merged_defconfig
@@ -106,141 +77,76 @@ jobs:
               if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
                   continue
               fi
-              echo "Merging defconfig: $line"
               cat arch/arm64/configs/$line >> arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
-
+          echo 'CONFIG_VDSO32=n' >> arch/arm64/configs/merged_defconfig
       - name: Setup KernelSU
         run: |
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
           echo 'CONFIG_KPROBES=y' >> arch/arm64/configs/merged_defconfig
           echo 'CONFIG_HAVE_KPROBES=y' >> arch/arm64/configs/merged_defconfig
           echo 'CONFIG_KPROBE_EVENTS=y' >> arch/arm64/configs/merged_defconfig
-
       - name: Apply kernel patch
         run: |
           while read -r line; do
               if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
                   continue
               fi
-              echo "Applying kernel patch: $line"
-              git apply "this-repo/patches/$line" || echo "Patch $line skipped (not applicable)"
+              git apply "this-repo/patches/$line" || true
           done <<<"$kernel_patch"
-
       - name: Apply KernelSU patch
         run: |
           while read -r line; do
               if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
                   continue
               fi
-              echo "Applying KernelSU patch: $line"
-              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line" || echo "KernelSU patch $line skipped (not applicable)"
+              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line" || true
           done <<<"$kernelsu_patch"
-
-      - name: "AOSP-Clang: Restore"
-        id: aosp_clang_restore
-        if: env.clang_type == 'aosp'
-        uses: actions/cache/restore@v4
-        with:
-          path: aosp-clang
-          key: aosp-clang-${{ env.clang_version }}
-
-      - name: "AOSP-Clang: Download"
-        id: aosp_clang_download
-        if: env.clang_type == 'aosp' && steps.aosp_clang_restore.outputs.cache-hit != 'true'
+      - name: AOSP-Clang Setup
         run: |
-          aosp_clang_branch=$(
-              case "$clang_version" in
-              r365631c ) echo android11-release;;
-              r383902 | r416183b) echo master-kernel-build-2021 ;;
-              r450784e) echo master-kernel-build-2022 ;;
-              r487747c) echo main-kernel-build-2023 ;;
-              *) echo main ;;
-            esac
-          )
           mkdir -p aosp-clang
-          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz | tar xz -C aosp-clang
-
-      - name: "AOSP-Clang: Save"
-        id: aosp_clang_save
-        if: env.clang_type == 'aosp' && steps.aosp_clang_download.outcome == 'success'
-        uses: actions/cache/save@v4
-        with:
-          path: aosp-clang
-          key: aosp-clang-${{ env.clang_version }}
-
-      - name: "AOSP-Clang: Setup"
-        if: env.clang_type == 'aosp'
+          curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/master/clang-r416183b.tar.gz | tar -xz -C aosp-clang
+          echo PATH=$(pwd)/aosp-clang/bin:$PATH >> $GITHUB_ENV
+      - name: Export flags
         run: |
-          echo PATH=$(pwd)/aosp-clang/bin:$PATH | tee -a $GITHUB_ENV
-
-      - name: "Vanilla-Clang: Setup"
-        if: env.clang_type == 'vanilla'
-        run: |
-          curl -L https://apt.llvm.org/llvm.sh | sudo bash -s -- $clang_version
-          echo PATH=/usr/lib/llvm-$clang_version/bin:$PATH | tee -a $GITHUB_ENV
-
-      - name: export flags
-        run: |
-          echo flags=" \
-          O=out \
-          ARCH=arm64 \
-          LLVM=1 \
-          LLVM_IAS=1 \
-          CROSS_COMPILE=aarch64-linux-gnu- \
-          CROSS_COMPILE_ARM32=arm-linux-gnueabi-
-          " | tee -a $GITHUB_ENV
-
+          echo 'flags=O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi-' >> $GITHUB_ENV
       - name: Make defconfig
-        run: |
-          make $flags merged_defconfig
-
+        run: make $flags merged_defconfig
       - name: Make
-        run: |
-          make $flags -j$(nproc --all) Image.gz-dtb
-
+        run: make $flags -j$(nproc --all) Image.gz-dtb
       - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
           unzip -q AnyKernel3.zip
           cat >AnyKernel3-master/anykernel.sh <<EOF
-          properties() { '
-          kernel.string=$kernel_repository $kernel_branch with KernelSU $kernelsu_remote_version for $device
-          do.devicecheck=1
-          do.modules=0
-          do.cleanup=1
-          do.cleanuponabort=1
-          device.name1=$device
-          '; }
+          properties() {
+              kernel.string=dipper-kernel-KSU
+              do.devicecheck=1
+              do.modules=0
+              do.cleanup=1
+              do.cleanuponabort=1
+              device.name1=dipper
+          }
           block=auto
           is_slot_device=auto
-          ramdisk_compression=auto
-          patch_vbmeta_flag=auto
           . tools/ak3-core.sh
           split_boot
           flash_boot
           EOF
           cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
-          if [ -f out/arch/arm64/boot/dtbo.img ]; then
-              cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
-          fi
           cd AnyKernel3-master
-          rm -rf .git* README.md
           zip -r -q ../boot.zip *
-
-      - name: "Upload artifact"
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: boot
           path: boot.zip
-
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.kernelsu_remote_version }}
           body: |
-            Device: ${{ env.device }}
-            Kernel: https://github.com/${{ env.kernel_repository }}/tree/${{ env.kernel_commit_id }}
-            Branch: ${{ env.kernel_branch }}
-            KernelSU: https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
+            Device: dipper
+            Kernel: ${{ github.sha }}
+            KernelSU: v0.9.5
           files: boot.zip
