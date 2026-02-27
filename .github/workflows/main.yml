@@ -77,11 +77,11 @@ jobs:
       - name: Merge defconfig
         run: |
           while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Merging defconfig: $line"
-              cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            echo "Merging defconfig: $line"
+            cat arch/arm64/configs/$line >>arch/arm64/configs/merged_defconfig
           done <<<"$defconfig"
       - name: Setup KernelSU
         run: |
@@ -93,20 +93,20 @@ jobs:
       - name: Apply kernel patch
         run: |
           while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Applying kernel patch: $line"
-              git apply "this-repo/patches/$line"
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            echo "Applying kernel patch: $line"
+            git apply "this-repo/patches/$line"
           done <<<"$kernel_patch"
       - name: Apply KernelSU patch
         run: |
           while read -r line; do
-              if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
-                  continue
-              fi
-              echo "Applying KernelSU patch: $line"
-              git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
+            if [ -z "$line" ] || [[ "$line" == "#"* ]]; then
+              continue
+            fi
+            echo "Applying KernelSU patch: $line"
+            git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
           done <<<"$kernelsu_patch"
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
@@ -120,13 +120,13 @@ jobs:
         if: env.clang_type == 'aosp' && steps.aosp_clang_restore.outputs.cache-hit != 'true'
         run: |
           aosp_clang_branch=$(
-              case "$clang_version" in
+            case "$clang_version" in
               r365631c ) echo android11-release;;
               r383902 | r416183b) echo master-kernel-build-2021 ;;
               r450784e) echo master-kernel-build-2022 ;;
               r487747c) echo main-kernel-build-2023 ;;
               *) echo main ;;
-              esac
+            esac
           )
           mkdir -p aosp-clang
           curl -L https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/$aosp_clang_branch/clang-$clang_version.tar.gz | tar xz -C aosp-clang
@@ -159,9 +159,13 @@ jobs:
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
+      - name: Fix vdso32 linker
+        run: |
+          # 强制修改 vdso32 的 Makefile，让它用 ARM32 链接器
+          sed -i 's/$(LD)/arm-linux-gnueabi-ld/g' arch/arm64/kernel/vdso32/Makefile
       - name: Make
         run: |
-          make $flags -j$(nproc --all) LD=arm-linux-gnueabi-ld CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          make $flags -j$(nproc --all)
       - name: AnyKernel3
         run: |
           curl -Lo AnyKernel3.zip https://github.com/osm0sis/AnyKernel3/archive/refs/heads/master.zip
@@ -185,7 +189,7 @@ jobs:
           EOF
           cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
-              cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
+            cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
           cd AnyKernel3-master
           rm -rf .git* README.md
