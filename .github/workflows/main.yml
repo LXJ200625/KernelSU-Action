@@ -180,6 +180,13 @@ jobs:
         run: |
           make $flags merged_defconfig
 
+      - name: 删除 sdfat 驱动
+        run: |
+          if [ -d "fs/sdfat" ]; then
+            echo "正在删除 sdfat 目录..."
+            rm -rf fs/sdfat
+          fi
+
       - name: Make
         run: |
           make $flags -j$(nproc --all)
