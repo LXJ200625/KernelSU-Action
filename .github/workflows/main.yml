@@ -168,10 +168,10 @@ jobs:
           make $flags merged_defconfig
       - name: Remove vdso32 from build
         run: |
-          # 从主Makefile中移除vdso_prepare依赖，彻底不编译vdso32
+          # 1. 从 Kbuild 文件中移除 vdso32，让构建系统忽略它
+          sed -i '/obj-$(CONFIG_VDSO32)/d' arch/arm64/kernel/Kbuild
+          # 2. 从主 Makefile 中移除 vdso_prepare 依赖
           sed -i '/vdso_prepare/d' arch/arm64/Makefile
-          # 删除vdso32目录，让编译系统找不到它
-          rm -rf arch/arm64/kernel/vdso32
       - name: Make
         run: |
           make $flags -j$(nproc --all)
