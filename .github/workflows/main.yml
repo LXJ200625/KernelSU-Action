@@ -185,6 +185,7 @@ jobs:
          if [ -d "fs/sdfat" ]; then
             echo "正在彻底清理 sdfat..."
             sed -i '/sdfat/d' fs/Makefile
+            sed -i '/sdfat/d' fs/Kconfig
             rm -rf fs/sdfat
          fi
 
