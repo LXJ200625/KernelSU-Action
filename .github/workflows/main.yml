@@ -182,10 +182,11 @@ jobs:
 
       - name: 删除 sdfat 驱动
         run: |
-          if [ -d "fs/sdfat" ]; then
-              echo "正在清理 sdfat 源码..."
-              rm -f fs/sdfat/*.c fs/sdfat/*.h fs/sdfat/Makefile
-          fi
+         if [ -d "fs/sdfat" ]; then
+            echo "正在彻底清理 sdfat..."
+            sed -i '/sdfat/d' fs/Makefile
+            rm -rf fs/sdfat
+         fi
 
       - name: Make
         run: |
