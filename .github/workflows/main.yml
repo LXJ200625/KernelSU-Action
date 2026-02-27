@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: KazuDante89/tempest-4.4-CAF
-  kernel_branch: main
-  device: wayne
+  kernel_repository: tedomi2705/kernel_xiaomi_sdm845
+  kernel_branch: bka_test
+  device: dipper
   clang_version: r416183b
   defconfig: |
-    wayne_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/xiaomi/mi845_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
