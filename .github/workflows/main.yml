@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: jsdizkcksv/android_kernel_xiaomi_sdm660
-  kernel_branch: main
-  device: jason
+  kernel_repository: crdroidandroid/android_kernel_xiaomi_sdm660
+  kernel_branch: 16.0-qpr0
+  device: clover
   clang_version: r416183b
   defconfig: |
-    jason_defconfig
+    clover_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
@@ -98,9 +98,9 @@ jobs:
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
