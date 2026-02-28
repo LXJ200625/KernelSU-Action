@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/scarlet_wayne
-  kernel_branch: sched-test
-  device: wayne
-  clang_version: r487747c
+  kernel_repository: crdroidandroid/android_kernel_xiaomi_sdm660
+  kernel_branch: 16.0-qpr0
+  device: clover
+  clang_version: r48774
   defconfig: |
-    vendor/wayne-oss-perf_defconfig
+    clover_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
