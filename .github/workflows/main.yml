@@ -1,14 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: duckyduckG/android_kernel_xiaomi_sdm845_419
-  kernel_branch: lineage-23.2_xiaomi
+  kernel_repository: JackA1ltman/kernel_xiaomi_sdm845_binder_cgroup_v2
+  kernel_branch: staging
   device: dipper
   clang_version: r487747c
   defconfig: |
-    vendor/sdm845-perf_defconfig
+    vendor/mi845_defconfig
     vendor/xiaomi/dipper.config
-    vendor/xiaomi/sdm845-common.config
   kernel_patch: |
     
   kernelsu_patch: |
