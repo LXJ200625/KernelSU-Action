@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_xiaomi_dipper_bpf
-  kernel_branch: main
-  device: dipper
+  kernel_repository: LXJ200625/kernel_oos_RMX1901
+  kernel_branch: susfs2.0
+  device: RMX1901
   clang_version: r416183b
   defconfig: |
-    dipper-perf_defconfig
+    RMX1901_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
@@ -101,11 +101,11 @@ jobs:
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
+          # curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
