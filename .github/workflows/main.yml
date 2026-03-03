@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: tedomi2705/kernel_xiaomi_sdm845
-  kernel_branch: bka_test
+  kernel_repository: LXJ200625/kernel_xiaomi_dipper_bpf
+  kernel_branch: main
   device: dipper
   clang_version: r416183b
   defconfig: |
-    vendor/xiaomi/dipper.config
-    vendor/xiaomi/mi845_defconfig
+    dipper-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
