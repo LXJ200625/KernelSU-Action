@@ -4,7 +4,7 @@ env:
   kernel_repository: LXJ200625/kernel_xiaomi_dipper_bpf
   kernel_branch: main
   device: dipper
-  clang_version: r416183b
+  clang_version: r487747c
   defconfig: |
     dipper-perf_defconfig
   kernel_patch: |
@@ -179,7 +179,11 @@ jobs:
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
-
+      
+      - name: Remove incompatible -fuse-ld=gold flag
+        run: |
+          find . -name "Makefile" -o -name "*.mk" | xargs sed -i 's/-fuse-ld=gold//g'
+      
       - name: Make
         run: |
           make $flags -j$(nproc --all)
