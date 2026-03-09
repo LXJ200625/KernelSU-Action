@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: LXJ200625/crdroidandroid_sdm660_clover
-  kernel_branch: sixteen
+  kernel_branch: fourteen
   device: clover
   clang_version: r416183b
   defconfig: |
