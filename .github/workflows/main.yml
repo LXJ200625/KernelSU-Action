@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: user-why-red/android_kernel_xiaomi_sdm660_44
-  kernel_branch: backport-ext4-4.19
-  device: wayne
+  kernel_repository: LXJ200625/kernel_xiaomi_dipper_bpf5.4
+  kernel_branch: bpf-5.4
+  device: dipper
   clang_version: r416183b
   defconfig: |
-    a26x-perf_defconfig
+    dipper_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
