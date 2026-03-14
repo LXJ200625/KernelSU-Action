@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_xiaomi_sdm660_clover
-  kernel_branch: lineage-21
-  device: clover
+  kernel_repository: JackA1ltman/kernel_xiaomi_sdm845_binder_cgroup_v2
+  kernel_branch: vic-bpf-5.4
+  device: dipper
   clang_version: r383902
   defconfig: |
-    clover_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/xiaomi/mi845_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
@@ -98,9 +99,9 @@ jobs:
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
-          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
