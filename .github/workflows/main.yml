@@ -4,7 +4,7 @@ env:
   kernel_repository: JackA1ltman/kernel_xiaomi_sdm845_binder_cgroup_v2
   kernel_branch: vic-bpf-5.4
   device: dipper
-  clang_version: r383902
+  clang_version: r416183b
   defconfig: |
     vendor/xiaomi/dipper.config
     vendor/xiaomi/mi845_defconfig
@@ -98,10 +98,10 @@ jobs:
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          # curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
+          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
