@@ -6,7 +6,7 @@ env:
   device: dipper
   clang_version: r450784e
   defconfig: |
-    vendor/sdm845-perf_defconfig
+    vendor/xiaomi/stock/sdm845-stock_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
