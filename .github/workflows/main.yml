@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_oos_RMX1901
-  kernel_branch: susfs2.0
-  device: RMX1901
+  kernel_repository: LXJ200625/D8G_Kernel
+  kernel_branch: main
+  device: dipper
   clang_version: r416183b
   defconfig: |
-    RMX1901_defconfig
+    vendor/xiaomi/stock/sdm845-stock_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
