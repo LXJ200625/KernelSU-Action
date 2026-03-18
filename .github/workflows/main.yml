@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/D8G_Kernel
+  kernel_repository: donvito007/D8G_Kernel
   kernel_branch: main
   device: dipper
   clang_version: r450784e
   defconfig: |
-    vendor/xiaomi/stock/sdm845-stock_defconfig
+    dipper_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
