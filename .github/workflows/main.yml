@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: JackA1ltman/kernel_xiaomi_sdm845_binder_cgroup_v2
-  kernel_branch: staging
-  device: dipper
+  kernel_repository: Evolution-XYZ-Devices/kernel_xiaomi_lavender
+  kernel_branch: udc
+  device: jason
   clang_version: r487747c
   defconfig: |
-    vendor/xiaomi/mi845_defconfig
-    vendor/xiaomi/dipper.config
+    jason_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
