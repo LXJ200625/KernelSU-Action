@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: AstideLabs/android_kernel_xiaomi_sdm845
-  kernel_branch: stable/lineage-22.2
-  device: dipper
+  kernel_repository: user-why-red/android_kernel_xiaomi_sdm660_419
+  kernel_branch: back
+  device: wayne
   clang_version: r450784e
   defconfig: |
-    vendor/xiaomi/dipper.config
-    vendor/xiaomi/mi845_defconfig
+    vendor/wayne-oss-perf_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
