@@ -6,7 +6,7 @@ env:
   device: jason
   clang_version: r365631c
   defconfig: |
-    clover_defconfig
+    jason_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
