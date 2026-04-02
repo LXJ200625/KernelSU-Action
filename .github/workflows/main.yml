@@ -1,9 +1,9 @@
 name: Check and Build
 
 env:
-  kernel_repository: nazunamoe-device/android_kernel_xiaomi_sdm660
-  kernel_branch: new_90hz
-  device: clover
+  kernel_repository: LXJ200625/aosp_kernel_xiaomi_jason
+  kernel_branch: lineage-18.1
+  device: jason
   clang_version: r365631c
   defconfig: |
     clover_defconfig
@@ -101,7 +101,7 @@ jobs:
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          # curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
+           curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash
          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
