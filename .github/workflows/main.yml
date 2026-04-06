@@ -1,14 +1,16 @@
 name: Check and Build
 
 env:
-  kernel_repository: Evolution-XYZ-Devices/kernel_xiaomi_lavender
-  kernel_branch: udc
-  device: jason
+  kernel_repository: Kernel114514/android_kernel_xiaomi_sdm845_419
+  kernel_branch: dev
+  device: dipper
   clang_version: r416183b
   defconfig: |
-    jason_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/xiaomi/sdm845-common.config
+    vendor/sdm845-perf_defconfig
   kernel_patch: |
-    
+   # backport-path-umount.patch
   kernelsu_patch: |
 
 on:
@@ -97,10 +99,10 @@ jobs:
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          # curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
@@ -179,11 +181,7 @@ jobs:
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
-      
-      - name: Remove incompatible -fuse-ld=gold flag
-        run: |
-          find . -name "Makefile" -o -name "*.mk" | xargs sed -i 's/-fuse-ld=gold//g'
-      
+
       - name: Make
         run: |
           make $flags -j$(nproc --all)
@@ -213,7 +211,7 @@ jobs:
           flash_boot
           EOF
 
-          cp out/arch/arm64/boot/Image AnyKernel3-master/
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
               cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
