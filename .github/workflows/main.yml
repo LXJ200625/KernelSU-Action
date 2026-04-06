@@ -82,9 +82,18 @@ jobs:
           path: this-repo
           submodules: recursive
           
-      - name: Fix F2FS compilation error
+      - name: Fix F2FS sysfs.c compilation errors
         run: |
-          sed -i 's/static struct f2fs_attr f2fs_attr_##_name = {/static struct f2fs_attr __maybe_unused f2fs_attr_##_name = {/' fs/f2fs/sysfs.c
+          # 1. 修复未声明的标识符 'ui'
+          sed -i 's/^[[:space:]]*ui = (unsigned int \*)(ptr + a->offset);$/        unsigned int *ui = (unsigned int *)(ptr + a->offset);/' fs/f2fs/sysfs.c
+          
+          # 2. 修复参数不足的错误
+          sed -i 's/F2FS_RO_ATTR(F2FS_SBI, f2fs_sb_info, current_atomic_write, current_atomic_write);/F2FS_RO_ATTR(F2FS_SBI, f2fs_sb_info, current_atomic_write, current_atomic_write, 0);/' fs/f2fs/sysfs.c
+          
+          # 3. 修复所有类似的宏调用
+          sed -i 's/F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, peak_atomic_write, peak_atomic_write);/F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, peak_atomic_write, peak_atomic_write, 0);/' fs/f2fs/sysfs.c
+          
+          echo "F2FS编译修复完成"
 
       - name: Get latest kernel commit id
         run: |
