@@ -1,12 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: crdroidandroid/android_kernel_xiaomi_sdm660
-  kernel_branch: 16.0-qpr0
-  device: clover
+  kernel_repository: Kernel114514/android_kernel_xiaomi_sdm845_419
+  kernel_branch: dev
+  device: dipper
   clang_version: r416183b
   defconfig: |
-    clover_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/sdm845-common.config
+    vendor/sdm845-perf_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
