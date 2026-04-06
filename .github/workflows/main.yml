@@ -7,10 +7,10 @@ env:
   clang_version: r416183b
   defconfig: |
     vendor/xiaomi/dipper.config
-    vendor/xiaomi/sdm845-common.config
+    # vendor/xiaomi/sdm845-common.config
     vendor/sdm845-perf_defconfig
   kernel_patch: |
-    fix_f2fs_sysfs.patch
+    # fix_f2fs_sysfs.patch
   kernelsu_patch: |
 
 on:
