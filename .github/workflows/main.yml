@@ -4,7 +4,7 @@ env:
   kernel_repository: Kernel114514/android_kernel_xiaomi_sdm845_419
   kernel_branch: dev
   device: dipper
-  clang_version: r383902
+  clang_version: r416183b
   defconfig: |
     vendor/xiaomi/dipper.config
     vendor/xiaomi/sdm845-common.config
@@ -81,6 +81,10 @@ jobs:
         with:
           path: this-repo
           submodules: recursive
+          
+      - name: Fix F2FS compilation error
+        run: |
+          sed -i 's/static struct f2fs_attr f2fs_attr_##_name = {/static struct f2fs_attr __maybe_unused f2fs_attr_##_name = {/' fs/f2fs/sysfs.c
 
       - name: Get latest kernel commit id
         run: |
