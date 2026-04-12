@@ -4,7 +4,7 @@ env:
   kernel_repository: LXJ200625/sdm845_dipper_4.19
   kernel_branch: dev
   device: dipper
-  clang_version: r416183b
+  clang_version: r487747c
   defconfig: |
     vendor/xiaomi/dipper.config
     vendor/xiaomi/sdm845-common.config
