@@ -103,6 +103,30 @@ jobs:
            echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
            echo 'CONFIG_KSU_SUSFS=y' >>arch/arm64/configs/merged_defconfig
           # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+           mkdir -p KernelSU/kernel/core
+           touch KernelSU/kernel/core/init.c
+           cat >> KernelSU/kernel/core/init.c <<'EOF'
+#include <linux/static_key.h>
+#include <linux/export.h>
+
+DEFINE_STATIC_KEY_FALSE(ksu_init_rc_hook_key_false);
+EXPORT_SYMBOL(ksu_init_rc_hook_key_false);
+
+bool ksu_is_init_rc_hook_enabled(void)
+{
+    return static_branch_unlikely(&ksu_init_rc_hook_key_false);
+}
+EXPORT_SYMBOL(ksu_is_init_rc_hook_enabled);
+
+DEFINE_STATIC_KEY_FALSE(ksu_input_hook_key_false);
+EXPORT_SYMBOL(ksu_input_hook_key_false);
+
+bool ksu_is_input_hook_enabled(void)
+{
+    return static_branch_unlikely(&ksu_input_hook_key_false);
+}
+EXPORT_SYMBOL(ksu_is_input_hook_enabled);
+EOF
 
       - name: Apply kernel patch
         run: |
@@ -127,32 +151,6 @@ jobs:
               echo "Applying KernelSU patch: $line"
               git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
           done <<<"$kernelsu_patch"
-
-      - name: Fix KSU missing hook symbols
-        run: |
-          mkdir -p KernelSU/kernel/core
-          cat >> KernelSU/kernel/core/init.c << 'EOF'
-#include <linux/static_key.h>
-#include <linux/export.h>
-
-DEFINE_STATIC_KEY_FALSE(ksu_init_rc_hook_key_false);
-EXPORT_SYMBOL(ksu_init_rc_hook_key_false);
-
-bool ksu_is_init_rc_hook_enabled(void)
-{
-    return static_branch_unlikely(&ksu_init_rc_hook_key_false);
-}
-EXPORT_SYMBOL(ksu_is_init_rc_hook_enabled);
-
-DEFINE_STATIC_KEY_FALSE(ksu_input_hook_key_false);
-EXPORT_SYMBOL(ksu_input_hook_key_false);
-
-bool ksu_is_input_hook_enabled(void)
-{
-    return static_branch_unlikely(&ksu_input_hook_key_false);
-}
-EXPORT_SYMBOL(ksu_is_input_hook_enabled);
-EOF
 
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
