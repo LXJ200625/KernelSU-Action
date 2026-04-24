@@ -1,7 +1,7 @@
 name: Check and Build
 
 env:
-  kernel_repository: Evolution-X-Devices/kernel_xiaomi_sdm845
+  kernel_repository: LXJ200625/kernel_xiaomi_dipper
   kernel_branch: bka
   device: dipper
   clang_version: r487747c
@@ -127,6 +127,32 @@ jobs:
               echo "Applying KernelSU patch: $line"
               git apply -p2 --directory KernelSU/kernel "this-repo/patches/$line"
           done <<<"$kernelsu_patch"
+
+      - name: Fix KSU missing hook symbols
+        run: |
+          mkdir -p KernelSU/kernel/core
+          cat >> KernelSU/kernel/core/init.c << 'EOF'
+#include <linux/static_key.h>
+#include <linux/export.h>
+
+DEFINE_STATIC_KEY_FALSE(ksu_init_rc_hook_key_false);
+EXPORT_SYMBOL(ksu_init_rc_hook_key_false);
+
+bool ksu_is_init_rc_hook_enabled(void)
+{
+    return static_branch_unlikely(&ksu_init_rc_hook_key_false);
+}
+EXPORT_SYMBOL(ksu_is_init_rc_hook_enabled);
+
+DEFINE_STATIC_KEY_FALSE(ksu_input_hook_key_false);
+EXPORT_SYMBOL(ksu_input_hook_key_false);
+
+bool ksu_is_input_hook_enabled(void)
+{
+    return static_branch_unlikely(&ksu_input_hook_key_false);
+}
+EXPORT_SYMBOL(ksu_is_input_hook_enabled);
+EOF
 
       - name: "AOSP-Clang: Restore"
         id: aosp_clang_restore
