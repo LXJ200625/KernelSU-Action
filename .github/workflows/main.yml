@@ -103,9 +103,7 @@ jobs:
            echo 'CONFIG_KSU=y' >>arch/arm64/configs/merged_defconfig
            echo 'CONFIG_KSU_SUSFS=y' >>arch/arm64/configs/merged_defconfig
           # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
-           mkdir -p KernelSU/kernel/core
-           touch KernelSU/kernel/core/init.c
-           cat >> KernelSU/kernel/core/init.c <<'EOF'
+           cat >>KernelSU/kernel/core/init.c <<'EOF'
 #include <linux/static_key.h>
 #include <linux/export.h>
 
