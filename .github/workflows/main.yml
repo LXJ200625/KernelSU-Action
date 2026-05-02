@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: user-why-red/android_kernel_xiaomi_sdm660_419
-  kernel_branch: back
-  device: wayne
+  kernel_repository: LineageOS/android_kernel_xiaomi_sdm660
+  kernel_branch: lineage-20
+  device: jason
   clang_version: r450784e
   defconfig: |
-    vendor/wayne-oss-perf_defconfig
+    vendor/xiaomi/sdm660-defconfig
+    vendor/xiaomi/jason.config
   kernel_patch: |
   
   kernelsu_patch: |
