@@ -6,7 +6,7 @@ env:
   device: jason
   clang_version: r450784e
   defconfig: |
-    vendor/xiaomi/sdm660-defconfig
+    vendor/xiaomi/sdm660_defconfig
     vendor/xiaomi/jason.config
   kernel_patch: |
   
