@@ -1,16 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: Kernel114514/android_kernel_xiaomi_sdm845_419
-  kernel_branch: dev
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm845
+  kernel_branch: fourteen
   device: dipper
-  clang_version: r450784e
+  clang_version: r487747c
   defconfig: |
-    vendor/xiaomi/dipper.config
-    vendor/xiaomi/sdm845-common.config
-    vendor/sdm845-perf_defconfig
+    dipper_defconfig
   kernel_patch: |
-    
+    backport-path-umount.patch
   kernelsu_patch: |
 
 on:
@@ -100,9 +98,9 @@ jobs:
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
           curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
@@ -182,24 +180,6 @@ jobs:
         run: |
           make $flags merged_defconfig
 
-      - name: 删除 sdfat 驱动
-        run: |
-         if [ -d "fs/sdfat" ]; then
-            echo "正在彻底清理 sdfat..."
-            sed -i '/sdfat/d' fs/Makefile
-            sed -i '/sdfat/d' fs/Kconfig
-            rm -rf fs/sdfat
-         fi
-
-      - name: 修复 iov_iter_revert 未定义错误
-        run: |
-          FILE_PATH="net/tls/tls_sw.c"
-          if [ -f "$FILE_PATH" ]; then
-             echo "正在修复 $FILE_PATH ..."
-             sed -i '402s/^/\/\//' "$FILE_PATH"
-             echo "修复完成。"
-          fi
-
       - name: Make
         run: |
           make $flags -j$(nproc --all)
@@ -229,7 +209,7 @@ jobs:
           flash_boot
           EOF
 
-          cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
               cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
