@@ -4,7 +4,7 @@ env:
   kernel_repository: PixelExperience-Devices/kernel_xiaomi_clover
   kernel_branch: fourteen-plus
   device: clover
-  clang_version: r487747c
+  clang_version: r450784e
   defconfig: |
     clover_defconfig
   kernel_patch: |
