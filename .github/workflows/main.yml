@@ -130,6 +130,13 @@ jobs:
              fi
           done <<<"$kernel_patch"
 
+      - name: Fix susfs_extra_works
+        run: |
+             if [ -f fs/susfs.c ]; then
+              echo '' >> fs/susfs.c
+              echo 'void susfs_extra_works(void) {}' >> fs/susfs.c
+             fi
+
       - name: Apply KernelSU patch
         run: |
           while read -r line; do
