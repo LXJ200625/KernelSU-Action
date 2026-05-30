@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: AlcatrazDev-Android-Devices/kernel_xiaomi_clover
-  kernel_branch: 4.19-linaro-asb
+  kernel_repository: pix106/kernel_xiaomi_sdm660_aeon-4.19
+  kernel_branch: main-clover-wip
   device: clover
   clang_version: r416183b
   defconfig: |
-    clover-perf_defconfig
+    clover_defconfig
   kernel_patch: |
    # backport-path-umount.patch
   kernelsu_patch: |
