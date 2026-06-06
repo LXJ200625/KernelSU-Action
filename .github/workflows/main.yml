@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/D8G_Kernel
-  kernel_branch: main
-  device: dipper
+  kernel_repository: zeelog/android_kernel_xiaomi_mido
+  kernel_branch: lineage-17.1
+  device: mido
   clang_version: r416183b
   defconfig: |
-    vendor/xiaomi/stock/sdm845-stock_defconfig
+    mido_defconfig
   kernel_patch: |
     
   kernelsu_patch: |
