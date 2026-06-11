@@ -6,8 +6,8 @@ env:
   device: clover
   clang_version: r416183b
   defconfig: |
-    clover.config
-    sdm660_defconfig
+    vendor/xiaomi/clover.config
+    vendor/Xiaomi/sdm660_defconfig
   kernel_patch: |
    # backport-path-umount.patch
   kernelsu_patch: |
