@@ -1,10 +1,10 @@
 name: Check and Build
 
 env:
-  kernel_repository: pix106/kernel_xiaomi_sdm660_aeon-4.19
-  kernel_branch: main-clover-wip
+  kernel_repository: 1582130940/android_kernel_xiaomi_clover
+  kernel_branch: lineage-20.0-4.19
   device: clover
-  clang_version: r416183b
+  clang_version: r450784e
   defconfig: |
     clover_defconfig
   kernel_patch: |
