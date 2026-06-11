@@ -4,7 +4,7 @@ env:
   kernel_repository: 1582130940/android_kernel_xiaomi_clover
   kernel_branch: lineage-20.0-4.19
   device: clover
-  clang_version: r450784e
+  clang_version: r416183b
   defconfig: |
     clover_defconfig
   kernel_patch: |
