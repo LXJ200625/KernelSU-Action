@@ -6,8 +6,7 @@ env:
   device: violet
   clang_version: r383902
   defconfig: |
-    vendor/sdmsteppe-perf_defconfig
-    vendor/violet.config
+    vendor/violet-perf_defconfig
   kernel_patch: |
   
   kernelsu_patch: |
