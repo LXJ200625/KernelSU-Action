@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: Ancient-Project/android_kernel_xiaomi_violet
-  kernel_branch: sixteen
+  kernel_branch: 14
   device: violet
   clang_version: r383902
   defconfig: |
