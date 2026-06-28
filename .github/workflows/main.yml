@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: PixelExperience-Devices/kernel_xiaomi_mido
-  kernel_branch: thirteen
-  device: mido
-  clang_version: r365631c
+  kernel_repository: Pierre2324/NGK_android_kernel_xiaomi_sdm845
+  kernel_branch: u-caf-4.19
+  device: dipper
+  clang_version: r416183b
   defconfig: |
-    mido_defconfig
+    nogravity-dipper_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
@@ -97,10 +97,10 @@ jobs:
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          #curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+          #echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          #echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          #echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
