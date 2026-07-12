@@ -1,12 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: mk7x7/Naomi-Retro-mt6768_kernel
-  kernel_branch: upstream-main
+  kernel_repository: Kernel114514/android_kernel_xiaomi_sdm845_419
+  kernel_branch: lineage-23.2_xiaomi
   device: merlin
   clang_version: r383902
   defconfig: |
-    merlin_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/xiaomi/sdm845-common.config
+    vendor/sdm845-perf_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
