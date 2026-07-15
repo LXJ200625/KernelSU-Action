@@ -1,14 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: Kernel114514/android_kernel_xiaomi_sdm845_419
-  kernel_branch: lineage-23.2_xiaomi
+  kernel_repository: Jbub5/android_kernel_xiaomi_mt6768-s
+  kernel_branch: kernel-tree-7
   device: merlin
   clang_version: r416183b
   defconfig: |
-    vendor/xiaomi/dipper.config
-    vendor/xiaomi/sdm845-common.config
-    vendor/sdm845-perf_defconfig
+    merlin_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
