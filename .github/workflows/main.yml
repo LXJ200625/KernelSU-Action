@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: Jbub5/android_kernel_xiaomi_mt6768-s
-  kernel_branch: kernel-tree-7
-  device: merlin
-  clang_version: r416183b
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_polaris
+  kernel_branch: eleven
+  device: polaris
+  clang_version: r365631c
   defconfig: |
-    merlin_defconfig
+    polaris_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
