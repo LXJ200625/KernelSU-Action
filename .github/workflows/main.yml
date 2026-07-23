@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: PixelExperience-Devices/kernel_xiaomi_polaris
-  kernel_branch: eleven
-  device: polaris
+  kernel_repository: iKeramat/msm-4.4
+  kernel_branch: crdroid-13.0
+  device: gemini
   clang_version: r365631c
   defconfig: |
-    polaris_defconfig
+    vendor/xiaomi/gemini.config
+    vendor/xiaomi/mi8996_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
