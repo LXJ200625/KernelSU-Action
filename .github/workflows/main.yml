@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: B--B/Gemini-B--B-Kernel
-  kernel_branch: thirteen-inline
+  kernel_repository: LineageOS/android_kernel_xiaomi_msm8996
+  kernel_branch: lineage-20
   device: gemini
   clang_version: r365631c
   defconfig: |
