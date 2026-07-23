@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: iKeramat/msm-4.4
-  kernel_branch: crdroid-13.0
+  kernel_repository: B--B/Gemini-B--B-Kernel
+  kernel_branch: thirteen-inline
   device: gemini
   clang_version: r365631c
   defconfig: |
-    vendor/xiaomi/gemini.config
-    vendor/xiaomi/mi8996_defconfig
+    gemini-stock_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
