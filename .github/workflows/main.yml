@@ -6,7 +6,8 @@ env:
   device: gemini
   clang_version: r365631c
   defconfig: |
-    gemini-stock_defconfig
+    vendor/xiaomi/gemini.config
+    vendor/xiaomi/mi8996_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
