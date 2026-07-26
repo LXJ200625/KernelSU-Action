@@ -1,12 +1,14 @@
 name: Check and Build
 
 env:
-  kernel_repository: B--B/Gemini-B--B-Kernel
-  kernel_branch: fourteen
-  device: gemini
-  clang_version: r365631c
+  kernel_repository: B--B/android_kernel_xiaomi_sdm710
+  kernel_branch: fourteen-LTO
+  device: sirius
+  clang_version: r450784e
   defconfig: |
-    gemini-stock_defconfig
+    xiaomi/sdm710-common.config
+    xiaomi/sdm710-common-stock_defconfig
+    xiaomi/sirius.config
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
@@ -179,11 +181,6 @@ jobs:
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
-
-      - name: Disable LTO
-        run: |
-          ./scripts/config --file out/.config --disable LTO_CLANG
-          make $flags olddefconfig
 
       - name: Make
         run: |
