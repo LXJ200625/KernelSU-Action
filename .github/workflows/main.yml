@@ -4,7 +4,7 @@ env:
   kernel_repository: B--B/Gemini-B--B-Kernel
   kernel_branch: fourteen
   device: gemini
-  clang_version: r450784e
+  clang_version: r365631c
   defconfig: |
     gemini-stock_defconfig
   kernel_patch: |
