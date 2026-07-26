@@ -180,6 +180,11 @@ jobs:
         run: |
           make $flags merged_defconfig
 
+      - name: Disable LTO
+        run: |
+          ./scripts/config --file out/.config --disable LTO_CLANG
+          make $flags olddefconfig
+
       - name: Make
         run: |
           make $flags -j$(nproc --all)
