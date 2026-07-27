@@ -1,14 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: B--B/android_kernel_xiaomi_sdm710
-  kernel_branch: fourteen-LTO
-  device: sirius
+  kernel_repository: LineageOS/android_kernel_xiaomi_msm8996
+  kernel_branch: lineage-22.2
+  device: gemini
   clang_version: r450784e
   defconfig: |
-    xiaomi/sdm710-common.config
-    xiaomi/sdm710-common-stock_defconfig
-    xiaomi/sirius.config
+    vendor/xiaomi/config.gemini
+    vendor/xiaomi/mi8996_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
