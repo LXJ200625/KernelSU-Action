@@ -1,13 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: LineageOS/android_kernel_xiaomi_msm8996
-  kernel_branch: lineage-22.2
-  device: gemini
+  kernel_repository: pix106/android_kernel_xiaomi_sdm660_southwest-ng
+  kernel_branch: main
+  device: clover
   clang_version: r450784e
   defconfig: |
-    vendor/xiaomi/gemini.config
-    vendor/xiaomi/mi8996_defconfig
+    vendor/xiaomi/clover.config
+    vendor/xiaomi/sdm660_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
