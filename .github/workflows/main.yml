@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: AlcatrazDev-Android-Devices/kernel_xiaomi_clover
-  kernel_branch: lineage-23.1
+  kernel_repository: jsdizkcksv/android_kernel_xiaomi_sdm660
+  kernel_branch: main
   device: clover
-  clang_version: r450784e
+  clang_version: r365631c
   defconfig: |
-    vendor/xiaomi/clover.config
-    vendor/xiaomi/sdm660_defconfig
+    colover_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
