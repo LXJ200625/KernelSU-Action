@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: Kernel114514/kernel_xiaomi_sdm845
-  kernel_branch: seventeen
-  device: dipper
+  kernel_repository: PixelExperience-Devices/kernel_xiaomi_polaris
+  kernel_branch: thirteen
+  device: polaris
   clang_version: r416183b
   defconfig: |
-    vendor/xiaomi/dipper.config
-    vendor/xiaomi/mi845_defconfig
+    polaris_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
