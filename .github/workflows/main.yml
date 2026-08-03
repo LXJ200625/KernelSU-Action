@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: jsdizkcksv/android_kernel_xiaomi_sdm660
-  kernel_branch: main
-  device: clover
-  clang_version: r365631c
+  kernel_repository: Kernel114514/kernel_xiaomi_sdm845
+  kernel_branch: seventeen
+  device: dipper
+  clang_version: r416183b
   defconfig: |
-    clover_defconfig
+    vendor/xiaomi/dipper.config
+    vendor/xiaomi/mi845_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
