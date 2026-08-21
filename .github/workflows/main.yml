@@ -179,7 +179,7 @@ jobs:
       - name: Make defconfig
         run: |
           make $flags merged_defconfig
-          sed -i 's/^void audit_update_lsm_rules(void)/void __weak audit_update_lsm_rules(void)/' kernel/auditfilter.c
+          sed -i 's/audit_update_lsm_rules(/__weak audit_update_lsm_rules(/g' kernel/auditfilter.c
 
       - name: Make
         run: |
