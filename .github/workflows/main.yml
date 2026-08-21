@@ -182,7 +182,7 @@ jobs:
 
       - name: Make
         run: |
-          make $flags -j$(nproc --all)
+          make $flags -j$(nproc --all) Image.gz
 
       - name: AnyKernel3
         run: |
@@ -210,9 +210,6 @@ jobs:
           EOF
 
           cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
-          if [ -f out/arch/arm64/boot/dtbo.img ]; then
-              cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
-          fi
 
           cd AnyKernel3-master
           rm -rf .git* README.md
