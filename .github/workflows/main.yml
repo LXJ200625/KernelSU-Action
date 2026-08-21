@@ -1,8 +1,8 @@
 name: Check and Build
 
 env:
-  kernel_repository: violet-98/kernel_xiaomi_violet
-  kernel_branch: Ryuk-1.3-ksun-susfs
+  kernel_repository: https://github.com/jashvakharia/kernel_xiaomi_violet
+  kernel_branch: thirteen
   device: violet
   clang_version: r416183b
   defconfig: |
