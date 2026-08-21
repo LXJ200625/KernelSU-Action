@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: LXJ200625/kernel_xiaomi_violet
-  kernel_branch: sixteen
+  kernel_repository: LXJ200625/kernel_xiaomi_sm6150
+  kernel_branch: main
   device: violet
   clang_version: r416183b
   defconfig: |
-    vendor/violet-perf_defconfig
+    violet-perf_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
