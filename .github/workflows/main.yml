@@ -6,8 +6,8 @@ env:
   device: sirius
   clang_version: r487747c
   defconfig: |
-    vendor/xiaomi/sirius.config
-    vendor/xiaomi/sdm710-common.config
+    xiaomi/sirius.config
+    xiaomi/sdm710-common.config
     sdm670-perf_defconfig
   kernel_patch: |
     # backport-path-umount.patch
