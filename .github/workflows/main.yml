@@ -1,15 +1,16 @@
 name: Check and Build
 
 env:
-  kernel_repository: Kernel114514/android_kernel_xiaomi_sdm660
-  kernel_branch: lineage-21-4.19
-  device: jason
-  clang_version: r450784e
+  kernel_repository: Rocky7842/android_kernel_xiaomi_sdm710
+  kernel_branch: lineage-23.2
+  device: sirius
+  clang_version: r487747c
   defconfig: |
-    xiaomi/sdm660_defconfig
-    xiaomi/jason.config
+    vendor/xiaomi/sirius.config
+    vendor/xiaomi/sdm710-common.config
+    sdm670-perf_defconfig
   kernel_patch: |
-  
+    # backport-path-umount.patch
   kernelsu_patch: |
 
 on:
@@ -67,11 +68,6 @@ jobs:
           sudo apt install -y \
               binutils-arm-linux-gnueabi \
               binutils-aarch64-linux-gnu
-
-      - name: Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
       - name: Checkout kernel source
         uses: actions/checkout@v4
@@ -247,4 +243,4 @@ jobs:
             KernelSU:
             https://github.com/tiann/KernelSU/releases/tag/${{ env.kernelsu_remote_version }}
           files: |
-            capricorn.zip
+            boot.zip
