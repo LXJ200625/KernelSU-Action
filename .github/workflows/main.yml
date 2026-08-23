@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: JackA1ltman/kernel_xiaomi_sdm845_binder_cgroup_v2
-  kernel_branch: vic-bpf-5.10
+  kernel_branch: vic-bpf-5.4
   device: ursa
   clang_version: r487747c
   defconfig: |
