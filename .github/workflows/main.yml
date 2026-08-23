@@ -1,14 +1,17 @@
 name: Check and Build
 
 env:
-  kernel_repository: Ancient-Project/android_kernel_xiaomi_violet
-  kernel_branch: 14
-  device: violet
-  clang_version: r383902
+  kernel_repository: Rocky7842/android_kernel_xiaomi_sdm710
+  kernel_branch: lineage-23.2
+  device: sirius
+  clang_version: r416183b
   defconfig: |
-    vendor/violet-perf_defconfig
+    xiaomi/sirius.config
+    xiaomi/sdm710-common.config
+    sdm670-perf_defconfig
   kernel_patch: |
-  
+    backport-path-umount.patch
+    
   kernelsu_patch: |
 
 on:
@@ -209,7 +212,7 @@ jobs:
           flash_boot
           EOF
 
-          cp out/arch/arm64/boot/Image.gz AnyKernel3-master/
+          cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3-master/
           if [ -f out/arch/arm64/boot/dtbo.img ]; then
               cp out/arch/arm64/boot/dtbo.img AnyKernel3-master/
           fi
