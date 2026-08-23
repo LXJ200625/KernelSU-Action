@@ -1,14 +1,15 @@
 name: Check and Build
 
 env:
-  kernel_repository: kyasu/android_kernel_xiaomi_sdm660
-  kernel_branch: lineage-23.0
-  device: clover
+  kernel_repository: JackA1ltman/kernel_xiaomi_sdm845_binder_cgroup_v2
+  kernel_branch: vic-bpf-5.10
+  device: ursa
   clang_version: r487747c
   defconfig: |
-    clover_defconfig
+    vendor/xiaomi/ursa.config
+    vendor/xiaomi/mi845_defconfg
   kernel_patch: |
-    
+    backport-path-umount.patch
   kernelsu_patch: |
 
 on:
