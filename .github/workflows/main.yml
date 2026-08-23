@@ -10,8 +10,9 @@ env:
     vendor/xiaomi/mi845_defconfg
   kernel_patch: |
     backport-path-umount.patch
+    allow-init-exec-ksud-under-nosuid.patch
   kernelsu_patch: |
-
+    
 on:
   workflow_dispatch:
     inputs:
