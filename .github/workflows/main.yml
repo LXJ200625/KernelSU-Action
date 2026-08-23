@@ -7,7 +7,7 @@ env:
   clang_version: r487747c
   defconfig: |
     vendor/xiaomi/ursa.config
-    vendor/xiaomi/mi845_defconfg
+    vendor/xiaomi/mi845_defconfig
   kernel_patch: |
     backport-path-umount.patch
     allow-init-exec-ksud-under-nosuid.patch
