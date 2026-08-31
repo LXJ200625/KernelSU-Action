@@ -1,12 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: 1582130940/android_kernel_xiaomi_sdm660
-  kernel_branch: lineage-20.0
-  device: clover
+  kernel_repository: Ancient-Project/android_kernel_xiaomi_violet
+  kernel_branch: 14
+  device: violet
   clang_version: r416183b
   defconfig: |
-    clover_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
    # backport-path-umount.patch
   kernelsu_patch: |
