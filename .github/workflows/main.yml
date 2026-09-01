@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: frost-testzone/kernel_xiaomi_sm6150
-  kernel_branch: main
+  kernel_repository: Joker-V2/kernel_xiaomi_violet
+  kernel_branch: rksu
   device: violet
   clang_version: r416183b
   defconfig: |
-    vendor/violet.config
-    vendor/sdmsteppe-perf_defconfig
+    vendor/violet-perf_defconfig
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
@@ -98,10 +97,10 @@ jobs:
       - name: Setup KernelSU
         run: |
           # https://kernelsu.org/zh_CN/guide/how-to-integrate-for-non-gki.html
-          curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
-          echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
-          echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
+          # curl -L https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh | bash -s -- $kernelsu_remote_version
+          # echo 'CONFIG_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_HAVE_KPROBES=y' >>arch/arm64/configs/merged_defconfig
+          # echo 'CONFIG_KPROBE_EVENTS=y' >>arch/arm64/configs/merged_defconfig
 
       - name: Apply kernel patch
         run: |
