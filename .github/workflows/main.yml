@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: Joker-V2/kernel_xiaomi_violet
-  kernel_branch: fifteen
-  device: violet
+  kernel_repository: crdroidandroid/android_kernel_xiaomi_sdm845
+  kernel_branch: 15.0
+  device: dipper
   clang_version: r416183b
   defconfig: |
-    vendor/violet-perf_defconfig
+    vendor/xiaomi/mi845_defconfig
+    vendor/xiaomi/dipper.config
   kernel_patch: |
    # backport-path-umount.patch
   kernelsu_patch: |
