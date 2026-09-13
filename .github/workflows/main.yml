@@ -1,7 +1,7 @@
 name: Check and Build
 env:
-  kernel_repository: PixelExperience-Devices/kernel_xiaomi_sdm710
-  kernel_branch: thirteen
+  kernel_repository: Project-Nyanpasu/kernel_xiaomi_sirius
+  kernel_branch: timobaka
   device: sirius
   clang_version: r487747c
   defconfig: |
