@@ -54,25 +54,30 @@ jobs:
               clang_version=$(curl -L https://android.googlesource.com/kernel/common/+/refs/heads/android-mainline/build.config.constants | grep -Eo 'r[0-9]{6}[a-z]?[0-9]?')
               echo clang_version=$clang_version | tee -a $GITHUB_ENV
           fi
-      # 修复点1：安装lld跨架构链接器
+
       - name: Install packages
         run: |
           sudo apt update
           sudo apt install -y \
               binutils-arm-linux-gnueabi \
               binutils-aarch64-linux-gnu \
+              gcc-arm-linux-gnueabi \
+              gcc-aarch64-linux-gnu \
               lld
+              
       - name: Checkout kernel source
         uses: actions/checkout@v4
         with:
           repository: ${{ env.kernel_repository }}
           ref: ${{ env.kernel_branch }}
           submodules: recursive
+          
       - name: Checkout this repo
         uses: actions/checkout@v4
         with:
           path: this-repo
           submodules: recursive
+          
       - name: Get latest kernel commit id
         run: |
           echo kernel_commit_id=$(git rev-parse HEAD) | tee -a $GITHUB_ENV
