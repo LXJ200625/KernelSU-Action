@@ -1,9 +1,9 @@
 name: Check and Build
 env:
-  kernel_repository: Project-Nyanpasu/kernel_xiaomi_sirius
-  kernel_branch: timobaka
+  kernel_repository: LXJ200625/crDroid_kernel_xiaomi_sdm710
+  kernel_branch: crDroid-12.0
   device: sirius
-  clang_version: r487747c
+  clang_version: r365631c
   defconfig: |
     sirius_defconfig
   kernel_patch: |
