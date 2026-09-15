@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: TheCloverProject-Devices/kernel_xiaomi_violet
-  kernel_branch: bka
+  kernel_repository: CosmicCoreX/kernel_xiaomi_violet
+  kernel_branch: lineage-23.2
   device: violet
   clang_version: r416183b
   defconfig: |
-    vendor/violet-perf_defconfig
+    vendor/trinket-perf_defconfig
+    vendor/violet.config
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
