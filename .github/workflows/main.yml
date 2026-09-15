@@ -1,12 +1,13 @@
 name: Check and Build
 
 env:
-  kernel_repository: Joker-V2/kernel_xiaomi_violet
-  kernel_branch: rksu
+  kernel_repository: frost-testzone/kernel_xiaomi_sm6150
+  kernel_branch: main
   device: violet
   clang_version: r416183b
   defconfig: |
-    vendor/violet-perf_defconfig
+    trinket-perf_defconfig
+    violet.config
   kernel_patch: |
     #backport-path-umount.patch
   kernelsu_patch: |
