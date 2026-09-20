@@ -2,7 +2,7 @@ name: Check and Build
 
 env:
   kernel_repository: crdroidandroid/android_kernel_xiaomi_sdm845
-  kernel_branch: 15.0
+  kernel_branch: 15.0-dipper
   device: dipper
   clang_version: r416183b
   defconfig: |
