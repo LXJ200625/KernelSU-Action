@@ -1,13 +1,12 @@
 name: Check and Build
 
 env:
-  kernel_repository: MTK6893/lineage_kernel_xiaomi_sdm845
-  kernel_branch: lineage-23.0
+  kernel_repository: LXJ200625/kernel_xiaomi_dipper_bpf5.4
+  kernel_branch: bpf-5.4
   device: dipper
   clang_version: r416183b
   defconfig: |
-    vendor/xiaomi/mi845_defconfig
-    vendor/xiaomi/dipper.config
+    dipper_defconfig
   kernel_patch: |
    # backport-path-umount.patch
   kernelsu_patch: |
